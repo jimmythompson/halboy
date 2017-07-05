@@ -7,6 +7,7 @@
              add-link
              add-resource
              add-property
+             expand-link
              get-link
              get-embedded
              get-property]]))
@@ -23,8 +24,8 @@
           (add-link :next {:href "/orders?page=2"})
           (add-link :ea:find {:href      "/orders{?id}",
                               :templated true})
-          (add-link :ea:admin [{:href "/admins/2", :title "Fred"}
-                               {:href "/admins/5", :title "Kate"}])
+          (add-link :ea:admin {:href "/admins/2", :title "Fred"})
+          (add-link :ea:admin {:href "/admins/5", :title "Kate"})
           (add-resource :ea:order (new-embedded-resource
                                     {:self        {:href "/orders/123"},
                                      :ea:basket   {:href "/baskets/98712"},
@@ -44,18 +45,14 @@
 
   ; get-link should get a link from a resource
   (expect
-    "/orders?page=2"
+    {:href "/orders?page=2"}
     (get-link resource :next))
 
-  ; get-link should expand templated urls
+  ; get-link should get multiple links if they have been added
   (expect
-    "/orders/my-order"
-    (get-link resource :ea:find {:id "my-order"}))
-
-  ; get-link should remove unresolved template parameters
-  (expect
-    "/orders"
-    (get-link resource :ea:find))
+    [{:href "/admins/2", :title "Fred"}
+     {:href "/admins/5", :title "Kate"}]
+    (get-link resource :ea:admin))
 
   ; get-embedded should get an embedded resource
   (expect

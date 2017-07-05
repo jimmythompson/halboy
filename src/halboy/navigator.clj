@@ -7,7 +7,7 @@
 
 (defrecord Navigator [href resource meta])
 
-(defn- extract-navigator-from-response [response]
+(defn- response->navigator [response]
   (let [current-url (get-in response [:opts :url])
         resource (-> (:body response)
                      json->resource)]
@@ -18,7 +18,7 @@
 
 (defn- fetch-url [url]
   (-> (GET url)
-      extract-navigator-from-response))
+      response->navigator))
 
 (defn discover [href]
   (fetch-url href))

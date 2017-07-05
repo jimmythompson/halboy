@@ -16,12 +16,8 @@
   ([links embedded properties]
    (->Resource links embedded properties)))
 
-(defn get-link
-  ([resource rel]
-   (get-link resource rel {}))
-  ([resource rel params]
-   (-> (get-in resource [:links rel :href])
-       (params/expand-params params))))
+(defn get-link [resource key]
+  (get-in resource [:links key]))
 
 (defn get-embedded [resource key]
   (get-in resource [:embedded key]))
