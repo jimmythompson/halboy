@@ -8,6 +8,10 @@
     (list? previous) (conj previous current)
     :else (list previous current)))
 
+(defn- apply-with-pairs [f resource args]
+  (let [arg-pairs (seq (apply hash-map args))]
+    (reduce (fn [r [k v]] (f r k v)) resource arg-pairs)))
+
 (defrecord Resource [links embedded properties])
 
 (defn new-resource
@@ -35,8 +39,7 @@
       (:properties resource))))
 
 (defn add-links [resource & args]
-  (let [arg-pairs (seq (apply hash-map args))]
-    (reduce (fn [r [k v]] (add-link r k v)) resource arg-pairs)))
+  (apply-with-pairs add-link resource args))
 
 (defn add-resource [resource rel r]
   (let [existing-resources (:embedded resource)
@@ -55,5 +58,4 @@
       (assoc existing-properties rel r))))
 
 (defn add-properties [resource & args]
-  (let [arg-pairs (seq (apply hash-map args))]
-    (reduce (fn [r [k v]] (add-property r k v)) resource arg-pairs)))
+  (apply-with-pairs add-property resource args))
