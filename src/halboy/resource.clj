@@ -29,7 +29,6 @@
 (defn get-property [resource key]
   (get-in resource [:properties key]))
 
-
 (defn add-link [resource rel m]
   (let [existing-links (:links resource)
         updated-link (-> (get existing-links rel)

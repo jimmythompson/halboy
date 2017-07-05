@@ -10,9 +10,6 @@
     [halboy.json :refer [json->resource resource->json]]
     [cheshire.core :as json]))
 
-; json->resource
-
-; resource->json
 (let [resource (-> (new-resource)
                    (add-link :self {:href "/orders"})
                    (add-link :curies {:name      "ea",
@@ -68,12 +65,12 @@
                              :currently-processing 14
                              :shipped-today        20})]
 
-  ; should marshal a resource into some json
+  ; resource->json should marshal a resource into some json
   (expect
     json-representation
     (resource->json resource))
 
-  ; should parse some json into a resource
+  ; json->resource should parse some json into a resource
   (expect
     resource
     (json->resource json-representation)))
