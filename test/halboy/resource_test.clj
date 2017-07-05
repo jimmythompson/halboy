@@ -5,6 +5,7 @@
     [halboy.resource
      :refer [new-resource
              add-link
+             add-links
              add-resource
              add-property
              get-link
@@ -13,6 +14,23 @@
 
 (defn- new-embedded-resource [links properties]
   (new-resource links {} properties))
+
+; add-link adds a link to the resource
+(expect
+  (new-resource
+    {:self {:href "/orders"}} {} {})
+  (-> (new-resource)
+      (add-link :self {:href "/orders"})))
+
+; add-links adds multiple links to the resource
+(expect
+  (new-resource
+    {:self {:href "/orders"}
+     :next {:href "/orders?page=2"}} {} {}))
+  (-> (new-resource)
+      (add-links
+        :self {:href "/orders"}
+        :next {:href "/orders?page=2"}))
 
 (let [resource
       (-> (new-resource)

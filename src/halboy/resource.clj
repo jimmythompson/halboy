@@ -34,6 +34,10 @@
       (:embedded resource)
       (:properties resource))))
 
+(defn add-links [resource & args]
+  (let [arg-pairs (seq (apply hash-map args))]
+    (reduce (fn [r [k v]] (add-link r k v)) resource arg-pairs)))
+
 (defn add-resource [resource rel r]
   (let [existing-resources (:embedded resource)
         updated-resource (-> (get existing-resources rel)
