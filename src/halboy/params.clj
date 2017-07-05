@@ -2,7 +2,7 @@
 
 (def not-nil? (complement nil?))
 
-(defn expand-param [param values]
+(defn- expand-param [param values]
   (let [expanded (get values (keyword param))]
     (if (not-nil? expanded)
       (format "/%s" expanded)
