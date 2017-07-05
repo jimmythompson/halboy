@@ -53,3 +53,7 @@
       (:links resource)
       (:embedded resource)
       (assoc existing-properties rel r))))
+
+(defn add-properties [resource & args]
+  (let [arg-pairs (seq (apply hash-map args))]
+    (reduce (fn [r [k v]] (add-property r k v)) resource arg-pairs)))

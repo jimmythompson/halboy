@@ -10,7 +10,8 @@
              add-property
              get-link
              get-embedded
-             get-property]]))
+             get-property
+             add-properties]]))
 
 (defn- new-embedded-resource [links properties]
   (new-resource links {} properties))
@@ -31,6 +32,23 @@
       (add-links
         :self {:href "/orders"}
         :next {:href "/orders?page=2"})))
+
+; add-property adds properties to the resource
+(expect
+  (new-resource
+    {} {} {:currently-processing 14})
+  (-> (new-resource)
+      (add-property :currently-processing 14)))
+
+; add-properties adds multiple properties to the resource
+(expect
+  (new-resource
+    {} {} {:currently-processing 14
+           :shipped-today        20})
+  (-> (new-resource)
+      (add-properties
+        :currently-processing 14
+        :shipped-today 20)))
 
 (let [resource
       (-> (new-resource)
