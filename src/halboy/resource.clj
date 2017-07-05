@@ -9,8 +9,12 @@
     :else (list previous current)))
 
 (defn- apply-with-pairs [f resource args]
-  (let [arg-pairs (seq (apply hash-map args))]
-    (reduce (fn [r [k v]] (f r k v)) resource arg-pairs)))
+  (if args
+    (if (next args)
+      (recur f (f resource (first args) (second args)) (nnext args))
+      (throw (IllegalArgumentException.
+               "apply-with-pairs expects even number of arguments, found odd number")))
+    resource))
 
 (defrecord Resource [links embedded properties])
 
@@ -49,6 +53,9 @@
       (:links resource)
       (assoc existing-resources rel updated-resource)
       (:properties resource))))
+
+(defn add-resources [resource & args]
+  (apply-with-pairs add-resource resource args))
 
 (defn add-property [resource rel r]
   (let [existing-properties (:properties resource)]

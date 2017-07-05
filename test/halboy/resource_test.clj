@@ -7,6 +7,7 @@
              add-link
              add-links
              add-resource
+             add-resources
              add-property
              get-link
              get-embedded
@@ -49,6 +50,60 @@
       (add-properties
         :currently-processing 14
         :shipped-today 20)))
+
+; add-resource adds an embedded resource
+(expect
+  (new-resource
+    {} {:ea:order (new-embedded-resource
+                    {:self        {:href "/orders/123"},
+                     :ea:basket   {:href "/baskets/98712"},
+                     :ea:customer {:href "/customers/7809"}}
+                    {:total    30.0,
+                     :currency "USD",
+                     :status   "shipped"})} {})
+  (-> (new-resource)
+      (add-resource
+        :ea:order (new-embedded-resource
+                    {:self        {:href "/orders/123"},
+                     :ea:basket   {:href "/baskets/98712"},
+                     :ea:customer {:href "/customers/7809"}}
+                    {:total    30.0,
+                     :currency "USD",
+                     :status   "shipped"}))))
+
+; add-resources adds multiple embedded resources
+(expect
+  (new-resource
+    {} {:ea:order [(new-embedded-resource
+                     {:self        {:href "/orders/123"},
+                      :ea:basket   {:href "/baskets/98712"},
+                      :ea:customer {:href "/customers/7809"}}
+                     {:total    30.0,
+                      :currency "USD",
+                      :status   "shipped"})
+                   (new-embedded-resource
+                     {:self        {:href "/orders/124"},
+                      :ea:basket   {:href "/baskets/97213"},
+                      :ea:customer {:href "/customers/12369"}}
+                     {:total    20.0,
+                      :currency "USD",
+                      :status   "processing"})]} {})
+  (-> (new-resource)
+      (add-resources
+        :ea:order (new-embedded-resource
+                    {:self        {:href "/orders/123"},
+                     :ea:basket   {:href "/baskets/98712"},
+                     :ea:customer {:href "/customers/7809"}}
+                    {:total    30.0,
+                     :currency "USD",
+                     :status   "shipped"})
+        :ea:order (new-embedded-resource
+                    {:self        {:href "/orders/124"},
+                     :ea:basket   {:href "/baskets/97213"},
+                     :ea:customer {:href "/customers/12369"}}
+                    {:total    20.0,
+                     :currency "USD",
+                     :status   "processing"}))))
 
 (let [resource
       (-> (new-resource)
