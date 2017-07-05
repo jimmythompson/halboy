@@ -59,15 +59,21 @@
 
   ; get-embedded should get an embedded resource
   (expect
-    (new-embedded-resource
-      {:self        {:href "/orders/123"},
-       :ea:basket   {:href "/baskets/98712"},
-       :ea:customer {:href "/customers/7809"}}
-      {:total    30.0,
-       :currency "USD",
-       :status   "shipped"})
-    (-> (get-embedded resource :ea:order)
-        first))
+    [(new-embedded-resource
+       {:self        {:href "/orders/123"},
+        :ea:basket   {:href "/baskets/98712"},
+        :ea:customer {:href "/customers/7809"}}
+       {:total    30.0,
+        :currency "USD",
+        :status   "shipped"})
+     (new-embedded-resource
+       {:self        {:href "/orders/124"},
+        :ea:basket   {:href "/baskets/97213"},
+        :ea:customer {:href "/customers/12369"}}
+       {:total    20.0,
+        :currency "USD",
+        :status   "processing"})]
+    (get-embedded resource :ea:order))
 
   ; get-property should get a property from the body
   (expect
