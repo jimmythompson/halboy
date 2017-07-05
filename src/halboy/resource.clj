@@ -8,10 +8,12 @@
     (list? previous) (conj previous current)
     :else (list previous current)))
 
-(defn- apply-with-pairs [f resource args]
-  (if args
-    (if (next args)
-      (recur f (f resource (first args) (second args)) (nnext args))
+(defn- apply-with-pairs [f resource kvs]
+  (if kvs
+    (if (next kvs)
+      (let [rel (first kvs)
+            val (second kvs)]
+        (recur f (f resource rel val) (nnext kvs)))
       (throw (IllegalArgumentException.
                "apply-with-pairs expects even number of arguments, found odd number")))
     resource))
