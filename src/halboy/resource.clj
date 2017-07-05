@@ -10,6 +10,9 @@
 (defn new-embedded-resource [links properties]
   (->Resource links {} properties))
 
+(defn new-index-resource [links]
+  (->Resource links {} {}))
+
 (defn get-link
   ([resource rel]
    (get-link resource rel {}))

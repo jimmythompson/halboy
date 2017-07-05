@@ -1,9 +1,10 @@
 (ns halboy.resource-test
-  (:require [halresource.resource
-             :refer [new-resource
-                     add-link]]
-            [expectations :refer :all]
-            [halboy.resource :as halboy]))
+  (:require
+    [expectations :refer :all]
+    [halresource.resource
+     :refer [new-resource
+             add-link]]
+    [halboy.resource :as halboy]))
 
 (let [resource
       (halboy/new-resource
