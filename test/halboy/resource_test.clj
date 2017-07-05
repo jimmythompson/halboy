@@ -7,7 +7,6 @@
              add-link
              add-resource
              add-property
-             expand-link
              get-link
              get-embedded
              get-property]]))

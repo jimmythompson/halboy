@@ -30,5 +30,5 @@
 
     ;; should return the contents of the discovery endpoint
     (expect
-      "https://service.example.com/users"
+      {:href "https://service.example.com/users"}
       (resource/get-link resource :users))))
