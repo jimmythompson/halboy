@@ -26,11 +26,11 @@
 (expect
   (new-resource
     {:self {:href "/orders"}
-     :next {:href "/orders?page=2"}} {} {}))
+     :next {:href "/orders?page=2"}} {} {})
   (-> (new-resource)
       (add-links
         :self {:href "/orders"}
-        :next {:href "/orders?page=2"}))
+        :next {:href "/orders?page=2"})))
 
 (let [resource
       (-> (new-resource)
