@@ -24,12 +24,6 @@
   (-> (get body :_embedded {})
       (transform-values map->embedded-resource)))
 
-(defn- map->resource [m]
-  (new-resource
-    (extract-links m)
-    (extract-embedded m)
-    (extract-properties m)))
-
 (defn- links->map [resource]
   (let [links (:links resource)]
     (when (not (empty? links))
@@ -48,15 +42,23 @@
     (when (not (empty? resources))
       {:_embedded resources})))
 
+(defn map->resource [m]
+  (new-resource
+    (extract-links m)
+    (extract-embedded m)
+    (extract-properties m)))
 
 (defn json->resource [s]
   (-> (json/parse-string s)
       keywordize-keys
       map->resource))
 
+(defn resource->map [resource]
+  (merge
+    (links->map resource)
+    (embedded->map resource)
+    (:properties resource)))
+
 (defn resource->json [resource]
-  (-> (merge
-        (links->map resource)
-        (embedded->map resource)
-        (:properties resource))
+  (-> (resource->map resource)
       json/generate-string))
