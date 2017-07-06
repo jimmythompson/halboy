@@ -1,5 +1,9 @@
-(ns halboy.support.api)
+(ns halboy.support.api
+  (:require [halboy.resource :refer [new-resource add-links]]
+            [halboy.json :refer [resource->json]]))
 
-(defn on-discover [url response]
+(defn on-discover [url & kvs]
   [{:method :get :url url}
-   response])
+   {:status 200 :body (-> (new-resource)
+                          ((partial apply add-links) kvs)
+                          resource->json)}])

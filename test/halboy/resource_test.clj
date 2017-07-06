@@ -85,7 +85,7 @@
       (add-property :currently-processing 14)
       (get-property :currently-processing)))
 
-; add-properties adds multiple properties to the resource
+; should be able to add multiple properties
 (let [resource (-> (new-resource)
                    (add-properties
                      :currently-processing 14

@@ -16,10 +16,7 @@
   (concat
     (on-discover
       base-url
-      {:status 200
-       :body   (-> (new-resource base-url)
-                   (add-link :rel :users :href "https://service.example.com/users")
-                   (resource->representation :json))}))
+      :users {:href "https://service.example.com/users"}))
   (let [response (navigator/discover base-url)
         status (-> (navigator/get-meta response)
                    :status)
