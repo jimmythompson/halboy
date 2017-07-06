@@ -41,23 +41,34 @@
     (when (not (empty? resources))
       {:_embedded resources})))
 
-(defn map->resource [m]
+
+(defn map->resource
+  "Parses a map representing a HAL+JSON response into a
+  resource"
+  [m]
   (new-resource
     (extract-links m)
     (extract-embedded m)
     (extract-properties m)))
 
-(defn json->resource [s]
+(defn json->resource
+  "Parses a HAL+JSON string into a resource"
+  [s]
   (-> (json/parse-string s)
       keywordize-keys
       map->resource))
 
-(defn resource->map [resource]
+(defn resource->map
+  "Transforms a resource into a map representing a HAL+JSON
+  response"
+  [resource]
   (merge
     (links->map resource)
     (embedded->map resource)
     (:properties resource)))
 
-(defn resource->json [resource]
+(defn resource->json
+  "Transforms a resource into a HAL+JSON string"
+  [resource]
   (-> (resource->map resource)
       json/generate-string))
