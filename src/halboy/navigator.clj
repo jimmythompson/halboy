@@ -1,9 +1,10 @@
 (ns halboy.navigator
   (:refer-clojure :exclude [get])
   (:require [clojure.walk :refer [keywordize-keys]]
+            [cheshire.core :as json]
             [halboy.resource :as resource]
             [halboy.data :refer [transform-values]]
-            [halboy.json :refer [json->resource]]
+            [halboy.json :refer [json->resource resource->json]]
             [halboy.http :refer [GET POST]])
   (:import (java.net URL)))
 
@@ -33,7 +34,7 @@
       response->Navigator))
 
 (defn- post-url [url body]
-  (-> (POST url {:body body})
+  (-> (POST url {:body (json/generate-string body)})
       (response->Navigator)
       (extract-redirect-location)
       (fetch-url)))
