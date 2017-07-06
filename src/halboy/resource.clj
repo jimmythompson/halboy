@@ -8,6 +8,10 @@
     (list? l) (conj l r)
     :else (list l r)))
 
+(defn- unpack-map-into-pairs [m]
+  (-> (seq m)
+      flatten))
+
 (defn- apply-with-pairs [f resource kvs]
   (if kvs
     (if (next kvs)
@@ -83,7 +87,11 @@
       (assoc existing-properties rel r))))
 
 (defn add-properties
-  "Adds each key->value pair to the resource. If the key is
-  already present, it will be overwritten."
+  "Takes a map, or key->value pairs. It adds each key->value pair to the
+  resource. If the key is already present, it will be overwritten."
   [resource & args]
-  (apply-with-pairs add-property resource args))
+  (if (and (= 1 (count args)) (map? (first args)))
+    (let [pairs (-> (first args)
+                    unpack-map-into-pairs)]
+      (apply-with-pairs add-property resource pairs))
+    (apply-with-pairs add-property resource args)))

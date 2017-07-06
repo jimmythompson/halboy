@@ -92,3 +92,11 @@
                      :shipped-today 20))]
   (expect 14 (get-property resource :currently-processing))
   (expect 20 (get-property resource :shipped-today)))
+
+; should be able to add a map of properties
+(let [resource (-> (new-resource)
+                   (add-properties
+                     {:currently-processing 14
+                      :shipped-today        20}))]
+  (expect 14 (get-property resource :currently-processing))
+  (expect 20 (get-property resource :shipped-today)))
