@@ -1,26 +1,13 @@
 (ns halboy.resource
   (:require [clojure.string :as str]
-            [halboy.params :as params]))
+            [halboy.params :as params]
+            [halboy.argutils :refer [apply-pairs-or-map]]))
 
 (defn- create-or-append [l r]
   (cond
     (nil? l) r
     (list? l) (conj l r)
     :else (list l r)))
-
-(defn- unpack-map-into-pairs [m]
-  (-> (seq m)
-      flatten))
-
-(defn- apply-with-pairs [f resource kvs]
-  (if kvs
-    (if (next kvs)
-      (let [rel (first kvs)
-            val (second kvs)]
-        (recur f (f resource rel val) (nnext kvs)))
-      (throw (IllegalArgumentException.
-               "expected an even number of arguments, found odd number")))
-    resource))
 
 (defrecord Resource [links embedded properties])
 
@@ -57,7 +44,7 @@
 
 (defn add-links [resource & args]
   "Adds each rel->link to the resource"
-  (apply-with-pairs add-link resource args))
+  (apply-pairs-or-map add-link resource args))
 
 (defn add-resource
   "Adds an embedded resource to the resource. If the key is
@@ -75,7 +62,7 @@
   "Adds each key->resource pair to the resource. If the same key
   is used, the values will form a vector."
   [resource & args]
-  (apply-with-pairs add-resource resource args))
+  (apply-pairs-or-map add-resource resource args))
 
 (defn add-property [resource rel r]
   "Adds a new property to the resource. If the key is already
@@ -90,8 +77,4 @@
   "Takes a map, or key->value pairs. It adds each key->value pair to the
   resource. If the key is already present, it will be overwritten."
   [resource & args]
-  (if (and (= 1 (count args)) (map? (first args)))
-    (let [pairs (-> (first args)
-                    unpack-map-into-pairs)]
-      (apply-with-pairs add-property resource pairs))
-    (apply-with-pairs add-property resource args)))
+  (apply-pairs-or-map add-property resource args))
