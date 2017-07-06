@@ -3,10 +3,6 @@
   (:require [expectations :refer :all]
             [halboy.navigator :as navigator]
             [halboy.resource :as resource]
-            [halresource.resource
-             :refer [new-resource
-                     add-link
-                     resource->representation]]
             [halboy.support.api :refer [on-discover]]))
 
 (def base-url "https://service.example.com")
