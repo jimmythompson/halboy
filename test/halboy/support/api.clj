@@ -6,9 +6,10 @@
 
 (defn on-discover [url & kvs]
   [{:method :get :url url}
-   {:status 200 :body (-> (new-resource)
-                          ((partial apply add-links) kvs)
-                          resource->json)}])
+   {:status 200
+    :body   (-> (new-resource)
+                ((partial apply add-links) kvs)
+                resource->json)}])
 
 (defn on-get
   ([url response]
@@ -21,11 +22,19 @@
     response]))
 
 (defn on-post
-  ([url location]
+  ([url response]
    [{:method :post :url url}
-    {:status 201 :headers {:location location}}])
-  ([url body location]
+    response])
+  ([url body response]
    [{:method :post
      :url    url
      :body   (json/generate-string body)}
-    {:status 201 :headers {:location location}}]))
+    response]))
+
+(defn on-post-redirect
+  ([url location]
+   (on-post url {:status  201
+                 :headers {:location location}}))
+  ([url body location]
+   (on-post url body {:status  201
+                      :headers {:location location}})))

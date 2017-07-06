@@ -6,9 +6,11 @@
             [halboy.navigator :as navigator]
             [halboy.resource :as resource]
             [halboy.json :as json]
-            [halboy.support.api :refer [on-discover
-                                        on-get
-                                        on-post]])
+            [halboy.support.api
+             :refer [on-discover
+                     on-get
+                     on-post
+                     on-post-redirect]])
   (:import (java.net URL)))
 
 (def base-url "https://service.example.com")
@@ -27,7 +29,8 @@
   (concat
     (on-discover
       base-url
-      :users {:href "/users{?admin}"})
+      :users {:href      "/users{?admin}"
+              :templated true})
     (on-get
       (create-url base-url "/users")
       {:status 200
@@ -55,7 +58,8 @@
   (concat
     (on-discover
       base-url
-      :users {:href "/users{?admin}"})
+      :users {:href      "/users{?admin}"
+              :templated true})
     (on-get
       (create-url base-url "/users") {:admin true}
       {:status 200
@@ -84,7 +88,7 @@
     (on-discover
       base-url
       :users {:href "/users"})
-    (on-post
+    (on-post-redirect
       (create-url base-url "/users")
       {:name "Thomas"}
       "/users/thomas")
@@ -102,3 +106,19 @@
 
     (expect 200 status)
     (expect "Thomas" (resource/get-property new-user :name))))
+
+; should not follow location headers when the status is not 201
+(with-fake-http
+  (concat
+    (on-discover
+      base-url
+      :users {:href      "/users{?admin}"
+              :templated true})
+    (on-post
+      (create-url base-url "/users")
+      {:name "Thomas"}
+      {:status 400}))
+  (let [status (-> (navigator/discover base-url)
+                   (navigator/post :users {:name "Thomas"})
+                   (navigator/status))]
+    (expect 400 status)))

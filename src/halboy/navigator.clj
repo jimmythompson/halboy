@@ -32,20 +32,22 @@
 
 (defn- fetch-url
   ([url]
-    (fetch-url url {}))
+   (fetch-url url {}))
   ([url params]
    (-> (GET url {:query-params (stringify-keys params)})
        response->Navigator)))
 
 (defn- post-url [url body]
-  (-> (POST url {:body (json/generate-string body)})
-      (response->Navigator)
-      (extract-redirect-location)
-      (fetch-url)))
+  (let [post-response (-> (POST url {:body (json/generate-string body)})
+                          (response->Navigator))
+        status (get-in post-response [:response :status])]
+    (if (= status 201)
+      (-> (extract-redirect-location post-response)
+          (fetch-url))
+      post-response)))
 
 (defn- resolve-link [navigator link]
-  (let [base (-> navigator
-                 :href)
+  (let [base (:href navigator)
         relative-url (-> navigator
                          :resource
                          (resource/get-href link)
