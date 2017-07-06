@@ -14,67 +14,67 @@
       (add-link :self {:href "/orders"})
       (get-link :self)))
 
-; should be able to add multiple links, and they should stack
+; should be able to add multiple links and they should stack
 (expect
-  [{:href "/admins/2", :title "Fred"}
-   {:href "/admins/5", :title "Kate"}]
+  [{:href "/admins/2" :title "Fred"}
+   {:href "/admins/5" :title "Kate"}]
   (-> (new-resource)
       (add-links
-        :ea:admin {:href "/admins/2", :title "Fred"}
-        :ea:admin {:href "/admins/5", :title "Kate"})
+        :ea:admin {:href "/admins/2" :title "Fred"}
+        :ea:admin {:href "/admins/5" :title "Kate"})
       (get-link :ea:admin)))
 
 ; add-resource adds an embedded resource
 (expect
   (new-embedded-resource
-    {:self        {:href "/orders/123"},
-     :ea:basket   {:href "/baskets/98712"},
+    {:self        {:href "/orders/123"}
+     :ea:basket   {:href "/baskets/98712"}
      :ea:customer {:href "/customers/7809"}}
-    {:total    30.0,
-     :currency "USD",
+    {:total    30.0
+     :currency "USD"
      :status   "shipped"})
   (-> (new-resource)
       (add-resource
         :ea:order (new-embedded-resource
-                    {:self        {:href "/orders/123"},
-                     :ea:basket   {:href "/baskets/98712"},
+                    {:self        {:href "/orders/123"}
+                     :ea:basket   {:href "/baskets/98712"}
                      :ea:customer {:href "/customers/7809"}}
-                    {:total    30.0,
-                     :currency "USD",
+                    {:total    30.0
+                     :currency "USD"
                      :status   "shipped"}))
       (get-resource :ea:order)))
 
-; should be able to add multiple resources, and they should stack
+; should be able to add multiple resources and they should stack
 (expect
   [(new-embedded-resource
-     {:self        {:href "/orders/123"},
-      :ea:basket   {:href "/baskets/98712"},
+     {:self        {:href "/orders/123"}
+      :ea:basket   {:href "/baskets/98712"}
       :ea:customer {:href "/customers/7809"}}
-     {:total    30.0,
-      :currency "USD",
+     {:total    30.0
+      :currency "USD"
       :status   "shipped"})
    (new-embedded-resource
-     {:self        {:href "/orders/124"},
-      :ea:basket   {:href "/baskets/97213"},
+     {:self        {:href "/orders/124"}
+      :ea:basket   {:href "/baskets/97213"}
       :ea:customer {:href "/customers/12369"}}
-     {:total    20.0,
-      :currency "USD",
+     {:total    20.0
+      :currency "USD"
       :status   "processing"})]
   (-> (new-resource)
       (add-resources
         :ea:order (new-embedded-resource
-                    {:self        {:href "/orders/123"},
-                     :ea:basket   {:href "/baskets/98712"},
+                    {:self        {:href "/orders/123"}
+                     :ea:basket   {:href "/baskets/98712"}
                      :ea:customer {:href "/customers/7809"}}
-                    {:total    30.0,
-                     :currency "USD",
+                    {:total    30.0
+                     :currency "USD"
                      :status   "shipped"})
         :ea:order (new-embedded-resource
-                    {:self        {:href "/orders/124"},
-                     :ea:basket   {:href "/baskets/97213"},
+                    {:self        {:href "/orders/124"}
+                     :ea:basket   {:href "/baskets/97213"}
                      :ea:customer {:href "/customers/12369"}}
-                    {:total    20.0,
-                     :currency "USD",
+                    {:total    20.0
+                     :currency "USD"
                      :status   "processing"}))
       (get-resource :ea:order)))
 
