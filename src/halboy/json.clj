@@ -1,5 +1,4 @@
 (ns halboy.json
-  (:use clojure.pprint)
   (:require
     [clojure.walk :refer [keywordize-keys]]
     [halboy.data :refer [transform-values]]
