@@ -63,6 +63,12 @@
   [navigator]
   (:response navigator))
 
+(defn status
+  "Gets the status code from the last response from the navigator"
+  [navigator]
+  (-> (response navigator)
+      :status))
+
 (defn discover
   "Starts a conversation with an API. Use this on the discovery endpoint."
   [href]

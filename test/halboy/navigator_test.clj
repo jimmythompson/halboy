@@ -38,13 +38,13 @@
                      :users (create-user "sue")
                      :users (create-user "mary"))
                    (json/resource->json))}))
-  (let [finish (-> (navigator/discover base-url)
+  (let [result (-> (navigator/discover base-url)
                    (navigator/get :users))
-        response (navigator/response finish)
-        users (-> (navigator/resource finish)
+        status (navigator/status result)
+        users (-> (navigator/resource result)
                   (resource/get-resource :users))]
 
-    (expect 200 (:status response))
+    (expect 200 status)
 
     (expect
       ["Fred" "Sue" "Mary"]
@@ -66,12 +66,12 @@
                    (resource/add-link :self "/users/thomas")
                    (resource/add-property :name "Thomas")
                    (json/resource->json))}))
-  (let [finish (-> (navigator/discover base-url)
+  (let [result (-> (navigator/discover base-url)
                    (navigator/post :users {:name "Thomas"}))
-        response (navigator/response finish)
-        new-user (navigator/resource finish)]
+        status (navigator/status result)
+        new-user (navigator/resource result)]
 
-    (expect 200 (:status response))
+    (expect 200 status)
 
     (expect
       "Thomas"
