@@ -1,15 +1,16 @@
-(ns halboy.params)
+(ns halboy.params
+  (:require [expectations :refer :all]))
 
 (def not-nil? (complement nil?))
 
 (defn- expand-param [param values]
   (let [expanded (get values (keyword param))]
     (if (not-nil? expanded)
-      (format "/%s" expanded)
+      expanded
       "")))
 
-(defn expand-params [href params]
+(defn expand-link [href params]
   (clojure.string/replace
     href
-    #"\{\??(\w+)\}"
+    #"\{(\??\w+)\}"
     (fn [[_ key]] (expand-param key params))))

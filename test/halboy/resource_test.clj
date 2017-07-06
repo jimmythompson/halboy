@@ -14,7 +14,7 @@
       (add-link :self {:href "/orders"})
       (get-link :self)))
 
-; should be able to add multiple links under the same rel, and they should stack
+; should be able to add multiple links, and they should stack
 (expect
   [{:href "/admins/2", :title "Fred"}
    {:href "/admins/5", :title "Kate"}]
