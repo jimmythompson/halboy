@@ -14,6 +14,12 @@
       (add-link :self {:href "/orders"})
       (get-link :self)))
 
+(expect
+  "/orders"
+  (-> (new-resource)
+      (add-link :self {:href "/orders"})
+      (get-href :self)))
+
 ; should be able to add multiple links and they should stack
 (expect
   [{:href "/admins/2" :title "Fred"}

@@ -23,6 +23,12 @@
   [resource key]
   (get-in resource [:links key]))
 
+(defn get-href
+  "Gets a href within a resource"
+  [resource key]
+  (-> (get-link resource key)
+      :href))
+
 (defn get-resource [resource key]
   "Gets an embedded resource from a resource"
   (get-in resource [:embedded key]))
