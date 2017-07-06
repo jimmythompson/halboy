@@ -21,14 +21,29 @@
   (-> (GET url)
       response->Navigator))
 
-(defn discover [href]
+(defn location
+  "Gets the current location of the navigator"
+  [navigator]
+  (:href navigator))
+
+(defn resource
+  "Gets the resource from the navigator"
+  [navigator]
+  (:resource navigator))
+
+(defn response
+  "Gets the last response from the navigator"
+  [navigator]
+  (:response navigator))
+
+(defn discover
+  "Starts a conversation with an API. Use this on the discovery endpoint."
+  [href]
   (fetch-url href))
 
-(def location :href)
-(def resource :resource)
-(def response :response)
-
-(defn get [navigator link]
+(defn get
+  "Fetches the contents of a link in an API."
+  [navigator link]
   (-> navigator
       resource
       (resource/get-link link)
