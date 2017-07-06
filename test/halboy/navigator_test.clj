@@ -27,7 +27,7 @@
   (concat
     (on-discover
       base-url
-      :users {:href "/users"})
+      :users {:href "/users{?admin}"})
     (on-get
       (create-url base-url "/users")
       {:status 200

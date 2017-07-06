@@ -5,7 +5,8 @@
             [halboy.resource :as resource]
             [halboy.data :refer [transform-values]]
             [halboy.json :refer [json->resource resource->json]]
-            [halboy.http :refer [GET POST]])
+            [halboy.http :refer [GET POST]]
+            [halboy.params :as params])
   (:import (java.net URL)))
 
 (defrecord Navigator [href response resource])
@@ -44,8 +45,8 @@
                  :href)
         relative-url (-> navigator
                          :resource
-                         (resource/get-link link)
-                         :href)]
+                         (resource/get-href link)
+                         (params/expand-link {}))]
     (resolve-url base relative-url)))
 
 (defn location
