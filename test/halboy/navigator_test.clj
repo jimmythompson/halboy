@@ -50,6 +50,34 @@
       ["Fred" "Sue" "Mary"]
       (map #(resource/get-property % :name) users))))
 
+; should be able to navigate through links with query params
+(with-fake-http
+  (concat
+    (on-discover
+      base-url
+      :users {:href "/users{?admin}"})
+    (on-get
+      (create-url base-url "/users") {:admin true}
+      {:status 200
+       :body   (-> (resource/new-resource)
+                   (resource/add-link :self "/users")
+                   (resource/add-resources
+                     :users (create-user "fred")
+                     :users (create-user "sue")
+                     :users (create-user "mary"))
+                   (json/resource->json))}))
+  (let [result (-> (navigator/discover base-url)
+                   (navigator/get :users {:admin true}))
+        status (navigator/status result)
+        users (-> (navigator/resource result)
+                  (resource/get-resource :users))]
+
+    (expect 200 status)
+
+    (expect
+      ["Fred" "Sue" "Mary"]
+      (map #(resource/get-property % :name) users))))
+
 ; should be able to create resources in an API
 (with-fake-http
   (concat
@@ -58,6 +86,7 @@
       :users {:href "/users"})
     (on-post
       (create-url base-url "/users")
+      {:name "Thomas"}
       "/users/thomas")
     (on-get
       (create-url base-url "/users/thomas")
@@ -72,7 +101,4 @@
         new-user (navigator/resource result)]
 
     (expect 200 status)
-
-    (expect
-      "Thomas"
-      (resource/get-property new-user :name))))
+    (expect "Thomas" (resource/get-property new-user :name))))

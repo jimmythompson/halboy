@@ -1,6 +1,6 @@
 (ns halboy.navigator
   (:refer-clojure :exclude [get])
-  (:require [clojure.walk :refer [keywordize-keys]]
+  (:require [clojure.walk :refer [keywordize-keys stringify-keys]]
             [cheshire.core :as json]
             [halboy.resource :as resource]
             [halboy.data :refer [transform-values]]
@@ -30,9 +30,12 @@
       response
       resource)))
 
-(defn- fetch-url [url]
-  (-> (GET url)
-      response->Navigator))
+(defn- fetch-url
+  ([url]
+    (fetch-url url {}))
+  ([url params]
+   (-> (GET url {:query-params (stringify-keys params)})
+       response->Navigator)))
 
 (defn- post-url [url body]
   (-> (POST url {:body (json/generate-string body)})
@@ -77,10 +80,12 @@
 
 (defn get
   "Fetches the contents of a link in an API."
-  [navigator link]
-  (-> navigator
-      (resolve-link link)
-      (fetch-url)))
+  ([navigator link]
+   (get navigator link {}))
+  ([navigator link params]
+   (-> navigator
+       (resolve-link link)
+       (fetch-url params))))
 
 (defn post
   "Posts content to a link in an API."
