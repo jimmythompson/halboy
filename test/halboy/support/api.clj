@@ -7,3 +7,7 @@
    {:status 200 :body (-> (new-resource)
                           ((partial apply add-links) kvs)
                           resource->json)}])
+
+(defn on-get [url response]
+  [{:method :get :url url}
+   response])

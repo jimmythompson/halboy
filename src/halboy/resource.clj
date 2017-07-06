@@ -6,8 +6,8 @@
 (defn- create-or-append [l r]
   (cond
     (nil? l) r
-    (list? l) (conj l r)
-    :else (list l r)))
+    (vector? l) (conj l r)
+    :else [l r]))
 
 (defrecord Resource [links embedded properties])
 
