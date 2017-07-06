@@ -1,4 +1,4 @@
-(defproject halboy "0.2.3-SNAPSHOT"
+(defproject halboy "0.2.4-SNAPSHOT"
   :description "a hypermedia parser and navigator"
   :dependencies [[org.clojure/clojure "1.9.0-alpha16"]]
   :profiles {:shared {:plugins      [[jonase/eastwood "0.2.3"]]
