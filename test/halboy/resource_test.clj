@@ -2,65 +2,37 @@
   (:require
     [expectations :refer :all]
     [halboy.resource :as halboy]
-    [halboy.resource
-     :refer [new-resource
-             add-link
-             add-links
-             add-resource
-             add-resources
-             add-property
-             get-link
-             get-embedded
-             get-property
-             add-properties]]))
+    [halboy.resource :refer :all]))
 
 (defn- new-embedded-resource [links properties]
   (new-resource links {} properties))
 
-; add-link adds a link to the resource
+; should be able to add and retrieve links from the resource
 (expect
-  (new-resource
-    {:self {:href "/orders"}} {} {})
+  {:href "/orders"}
   (-> (new-resource)
-      (add-link :self {:href "/orders"})))
+      (add-link :self {:href "/orders"})
+      (get-link :self)))
 
-; add-links adds multiple links to the resource
+; should be able to add multiple links under the same rel, and they should stack
 (expect
-  (new-resource
-    {:self {:href "/orders"}
-     :next {:href "/orders?page=2"}} {} {})
+  [{:href "/admins/2", :title "Fred"}
+   {:href "/admins/5", :title "Kate"}]
   (-> (new-resource)
       (add-links
-        :self {:href "/orders"}
-        :next {:href "/orders?page=2"})))
-
-; add-property adds properties to the resource
-(expect
-  (new-resource
-    {} {} {:currently-processing 14})
-  (-> (new-resource)
-      (add-property :currently-processing 14)))
-
-; add-properties adds multiple properties to the resource
-(expect
-  (new-resource
-    {} {} {:currently-processing 14
-           :shipped-today        20})
-  (-> (new-resource)
-      (add-properties
-        :currently-processing 14
-        :shipped-today 20)))
+        :ea:admin {:href "/admins/2", :title "Fred"}
+        :ea:admin {:href "/admins/5", :title "Kate"})
+      (get-link :ea:admin)))
 
 ; add-resource adds an embedded resource
 (expect
-  (new-resource
-    {} {:ea:order (new-embedded-resource
-                    {:self        {:href "/orders/123"},
-                     :ea:basket   {:href "/baskets/98712"},
-                     :ea:customer {:href "/customers/7809"}}
-                    {:total    30.0,
-                     :currency "USD",
-                     :status   "shipped"})} {})
+  (new-embedded-resource
+    {:self        {:href "/orders/123"},
+     :ea:basket   {:href "/baskets/98712"},
+     :ea:customer {:href "/customers/7809"}}
+    {:total    30.0,
+     :currency "USD",
+     :status   "shipped"})
   (-> (new-resource)
       (add-resource
         :ea:order (new-embedded-resource
@@ -69,25 +41,25 @@
                      :ea:customer {:href "/customers/7809"}}
                     {:total    30.0,
                      :currency "USD",
-                     :status   "shipped"}))))
+                     :status   "shipped"}))
+      (get-resource :ea:order)))
 
-; add-resources adds multiple embedded resources
+; should be able to add multiple resources, and they should stack
 (expect
-  (new-resource
-    {} {:ea:order [(new-embedded-resource
-                     {:self        {:href "/orders/123"},
-                      :ea:basket   {:href "/baskets/98712"},
-                      :ea:customer {:href "/customers/7809"}}
-                     {:total    30.0,
-                      :currency "USD",
-                      :status   "shipped"})
-                   (new-embedded-resource
-                     {:self        {:href "/orders/124"},
-                      :ea:basket   {:href "/baskets/97213"},
-                      :ea:customer {:href "/customers/12369"}}
-                     {:total    20.0,
-                      :currency "USD",
-                      :status   "processing"})]} {})
+  [(new-embedded-resource
+     {:self        {:href "/orders/123"},
+      :ea:basket   {:href "/baskets/98712"},
+      :ea:customer {:href "/customers/7809"}}
+     {:total    30.0,
+      :currency "USD",
+      :status   "shipped"})
+   (new-embedded-resource
+     {:self        {:href "/orders/124"},
+      :ea:basket   {:href "/baskets/97213"},
+      :ea:customer {:href "/customers/12369"}}
+     {:total    20.0,
+      :currency "USD",
+      :status   "processing"})]
   (-> (new-resource)
       (add-resources
         :ea:order (new-embedded-resource
@@ -103,66 +75,20 @@
                      :ea:customer {:href "/customers/12369"}}
                     {:total    20.0,
                      :currency "USD",
-                     :status   "processing"}))))
+                     :status   "processing"}))
+      (get-resource :ea:order)))
 
-(let [resource
-      (-> (new-resource)
-          (add-link :self {:href "/orders"})
-          (add-link :curies {:name      "ea",
-                             :href      "http://example.com/docs/rels/{rel}",
-                             :templated true})
-          (add-link :next {:href "/orders?page=2"})
-          (add-link :ea:find {:href      "/orders{?id}",
-                              :templated true})
-          (add-link :ea:admin {:href "/admins/2", :title "Fred"})
-          (add-link :ea:admin {:href "/admins/5", :title "Kate"})
-          (add-resource :ea:order (new-embedded-resource
-                                    {:self        {:href "/orders/123"},
-                                     :ea:basket   {:href "/baskets/98712"},
-                                     :ea:customer {:href "/customers/7809"}}
-                                    {:total    30.0,
-                                     :currency "USD",
-                                     :status   "shipped"}))
-          (add-resource :ea:order (new-embedded-resource
-                                    {:self        {:href "/orders/124"},
-                                     :ea:basket   {:href "/baskets/97213"},
-                                     :ea:customer {:href "/customers/12369"}}
-                                    {:total    20.0,
-                                     :currency "USD",
-                                     :status   "processing"}))
-          (add-property :currently-processing 14)
-          (add-property :shipped-today 20))]
+; should be able to add and retrieve properties from the resource
+(expect
+  14
+  (-> (new-resource)
+      (add-property :currently-processing 14)
+      (get-property :currently-processing)))
 
-  ; get-link should get a link from a resource
-  (expect
-    {:href "/orders?page=2"}
-    (get-link resource :next))
-
-  ; get-link should get multiple links if they have been added
-  (expect
-    [{:href "/admins/2", :title "Fred"}
-     {:href "/admins/5", :title "Kate"}]
-    (get-link resource :ea:admin))
-
-  ; get-embedded should get an embedded resource
-  (expect
-    [(new-embedded-resource
-       {:self        {:href "/orders/123"},
-        :ea:basket   {:href "/baskets/98712"},
-        :ea:customer {:href "/customers/7809"}}
-       {:total    30.0,
-        :currency "USD",
-        :status   "shipped"})
-     (new-embedded-resource
-       {:self        {:href "/orders/124"},
-        :ea:basket   {:href "/baskets/97213"},
-        :ea:customer {:href "/customers/12369"}}
-       {:total    20.0,
-        :currency "USD",
-        :status   "processing"})]
-    (get-embedded resource :ea:order))
-
-  ; get-property should get a property from the body
-  (expect
-    14
-    (get-property resource :currently-processing)))
+; add-properties adds multiple properties to the resource
+(let [resource (-> (new-resource)
+                   (add-properties
+                     :currently-processing 14
+                     :shipped-today 20))]
+  (expect 14 (get-property resource :currently-processing))
+  (expect 20 (get-property resource :shipped-today)))

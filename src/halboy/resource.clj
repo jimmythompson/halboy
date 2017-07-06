@@ -29,7 +29,7 @@
 (defn get-link [resource key]
   (get-in resource [:links key]))
 
-(defn get-embedded [resource key]
+(defn get-resource [resource key]
   (get-in resource [:embedded key]))
 
 (defn get-property [resource key]
