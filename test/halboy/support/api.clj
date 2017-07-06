@@ -11,3 +11,7 @@
 (defn on-get [url response]
   [{:method :get :url url}
    response])
+
+(defn on-post [url location]
+  [{:method :post :url url}
+   {:status 201 :headers {:location location}}])
