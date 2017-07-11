@@ -1,14 +1,22 @@
 # halboy
 
-A Clojure library designed to ... well, that part is up to you.
+[![Clojars Project](https://img.shields.io/clojars/v/halboy.svg)](https://clojars.org/halboy)
 
-## Usage
+A Clojure library for all things hypermedia.
 
-FIXME
+* Create hypermedia resources
+* Marshal to and from JSON, or a map
+* Navigate JSON+HAL APIs
 
-## License
+# Contributing
 
-Copyright © 2017 FIXME
+I'm happy to receive and go through feedback, bug reports, and pull requests.
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+If you need to contact me, my email is jimmy[at]jimmythompson.co.uk.
+
+## Development 
+To run the tests:
+
+```sh
+$ lein test
+```
