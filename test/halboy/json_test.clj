@@ -98,11 +98,23 @@
 
 ; map->resource should parse embedded resources
 (let [order-resource (-> (hal/new-resource)
-                         (hal/add-link :self {:href "/orders/124"}))]
+                         (hal/add-link :self {:href "/orders/123"}))]
   (expect
     (-> (hal/new-resource)
         (hal/add-resource :ea:order order-resource))
-    (haljson/map->resource {:_embedded {:ea:order {:_links {:self {:href "/orders/124"}}}}})))
+    (haljson/map->resource {:_embedded {:ea:order {:_links {:self {:href "/orders/123"}}}}})))
+
+; map->resource should parse arrays of embedded resources
+(let [first-order (-> (hal/new-resource)
+                      (hal/add-link :self {:href "/orders/123"}))
+      second-order (-> (hal/new-resource)
+                       (hal/add-link :self {:href "/orders/124"}))]
+  (expect
+    (-> (hal/new-resource)
+        (hal/add-resources :ea:order first-order
+                           :ea:order second-order))
+    (haljson/map->resource {:_embedded {:ea:order [{:_links {:self {:href "/orders/123"}}}
+                                                   {:_links {:self {:href "/orders/124"}}}]}})))
 
 ; map->resource should parse properties
 (expect
