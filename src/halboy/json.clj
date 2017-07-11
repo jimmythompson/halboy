@@ -2,7 +2,7 @@
   (:require
     [clojure.walk :refer [keywordize-keys]]
     [halboy.data :refer [transform-values]]
-    [halboy.resource :refer [new-resource]]
+    [halboy.resource :as hal]
     [cheshire.core :as json]))
 
 (defn- extract-links [m]
@@ -13,7 +13,7 @@
 
 (defn- map->embedded-resource [m]
   (if (map? m)
-    (new-resource
+    (hal/new-resource
       (extract-links m)
       {}
       (extract-properties m))
@@ -46,7 +46,7 @@
   "Parses a map representing a HAL+JSON response into a
   resource"
   [m]
-  (new-resource
+  (hal/new-resource
     (extract-links m)
     (extract-embedded m)
     (extract-properties m)))
