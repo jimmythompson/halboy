@@ -2,43 +2,39 @@
   (:use clojure.pprint)
   (:require
     [expectations :refer :all]
-    [halboy.resource
-     :refer [new-resource
-             add-link
-             add-resource
-             add-property]]
+    [halboy.resource :as hal]
     [halboy.json :as haljson]
     [cheshire.core :as json]))
 
 (let [resource
-      (-> (new-resource)
-          (add-link :self {:href "/orders"})
-          (add-link :curies {:name      "ea",
-                             :href      "http://example.com/docs/rels/{rel}",
-                             :templated true})
-          (add-link :next {:href "/orders?page=2"})
-          (add-link :ea:find {:href      "/orders{?id}",
-                              :templated true})
-          (add-link :ea:admin {:href "/admins/2", :title "Fred"})
-          (add-link :ea:admin {:href "/admins/5", :title "Kate"})
-          (add-resource :ea:order (new-resource
-                                    {:self        {:href "/orders/123"},
-                                     :ea:basket   {:href "/baskets/98712"},
-                                     :ea:customer {:href "/customers/7809"}}
-                                    {}
-                                    {:total    30.0,
-                                     :currency "USD",
-                                     :status   "shipped"}))
-          (add-resource :ea:order (new-resource
-                                    {:self        {:href "/orders/124"},
-                                     :ea:basket   {:href "/baskets/97213"},
-                                     :ea:customer {:href "/customers/12369"}}
-                                    {}
-                                    {:total    20.0,
-                                     :currency "USD",
-                                     :status   "processing"}))
-          (add-property :currently-processing 14)
-          (add-property :shipped-today 20))
+      (-> (hal/new-resource)
+          (hal/add-link :self {:href "/orders"})
+          (hal/add-link :curies {:name      "ea",
+                                 :href      "http://example.com/docs/rels/{rel}",
+                                 :templated true})
+          (hal/add-link :next {:href "/orders?page=2"})
+          (hal/add-link :ea:find {:href      "/orders{?id}",
+                                  :templated true})
+          (hal/add-link :ea:admin {:href "/admins/2", :title "Fred"})
+          (hal/add-link :ea:admin {:href "/admins/5", :title "Kate"})
+          (hal/add-resource :ea:order (hal/new-resource
+                                        {:self        {:href "/orders/123"},
+                                         :ea:basket   {:href "/baskets/98712"},
+                                         :ea:customer {:href "/customers/7809"}}
+                                        {}
+                                        {:total    30.0,
+                                         :currency "USD",
+                                         :status   "shipped"}))
+          (hal/add-resource :ea:order (hal/new-resource
+                                        {:self        {:href "/orders/124"},
+                                         :ea:basket   {:href "/baskets/97213"},
+                                         :ea:customer {:href "/customers/12369"}}
+                                        {}
+                                        {:total    20.0,
+                                         :currency "USD",
+                                         :status   "processing"}))
+          (hal/add-property :currently-processing 14)
+          (hal/add-property :shipped-today 20))
 
       json-representation
       (json/generate-string
@@ -80,36 +76,36 @@
 
 ; map->resource should parse links
 (expect
-  (-> (new-resource)
-      (add-link :self {:href "/orders"}))
+  (-> (hal/new-resource)
+      (hal/add-link :self {:href "/orders"}))
   (haljson/map->resource {:_links {:self {:href "/orders"}}}))
 
 ; map->resource should include all information about a link
 (expect
-  (-> (new-resource)
-      (add-link :ea:find {:href      "/orders{?id}",
-                          :templated true}))
+  (-> (hal/new-resource)
+      (hal/add-link :ea:find {:href      "/orders{?id}",
+                              :templated true}))
   (haljson/map->resource {:_links {:ea:find {:href      "/orders{?id}",
                                              :templated true}}}))
 
 ; map->resource should parse arrays of links
 (expect
-  (-> (new-resource)
-      (add-link :ea:admin {:href "/admins/2"})
-      (add-link :ea:admin {:href "/admins/5"}))
+  (-> (hal/new-resource)
+      (hal/add-links :ea:admin {:href "/admins/2"}
+                     :ea:admin {:href "/admins/5"}))
   (haljson/map->resource {:_links {:ea:admin [{:href "/admins/2"}
                                               {:href "/admins/5"}]}}))
 
 ; map->resource should parse embedded resources
-(let [order-resource (-> (new-resource)
-                         (add-link :self {:href "/orders/124"}))]
+(let [order-resource (-> (hal/new-resource)
+                         (hal/add-link :self {:href "/orders/124"}))]
   (expect
-    (-> (new-resource)
-        (add-resource :ea:order order-resource))
+    (-> (hal/new-resource)
+        (hal/add-resource :ea:order order-resource))
     (haljson/map->resource {:_embedded {:ea:order {:_links {:self {:href "/orders/124"}}}}})))
 
 ; map->resource should parse properties
 (expect
-  (-> (new-resource)
-      (add-property :total 20.0))
+  (-> (hal/new-resource)
+      (hal/add-property :total 20.0))
   (haljson/map->resource {:total 20.0}))
