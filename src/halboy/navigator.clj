@@ -37,11 +37,12 @@
    (-> (GET url {:query-params (stringify-keys params)})
        response->Navigator)))
 
-(defn- post-url [url body]
+(defn- post-url [url body options]
   (let [post-response (-> (POST url {:body (json/generate-string body)})
                           (response->Navigator))
         status (get-in post-response [:response :status])]
-    (if (= status 201)
+    (if (and (= status 201)
+             (:follow-redirect options true))
       (-> (extract-redirect-location post-response)
           (fetch-url))
       post-response)))
@@ -91,7 +92,9 @@
 
 (defn post
   "Posts content to a link in an API."
-  [navigator link body]
-  (-> navigator
-      (resolve-link link)
-      (post-url body)))
+  ([navigator link body]
+   (post navigator link body {}))
+  ([navigator link body options]
+   (-> navigator
+       (resolve-link link)
+       (post-url body options))))

@@ -122,3 +122,27 @@
                    (navigator/post :users {:name "Thomas"})
                    (navigator/status))]
     (expect 400 status)))
+
+; should not follow location headers when the options say not to
+(with-fake-http
+  (concat
+    (on-discover
+      base-url
+      :users {:href      "/users{?admin}"
+              :templated true})
+    (on-post-redirect
+      (create-url base-url "/users")
+      {:name "Thomas"}
+      "/users/thomas"))
+  (let [result (-> (navigator/discover base-url)
+                   (navigator/post :users
+                                   {:name "Thomas"}
+                                   {:follow-redirect false}))
+        response (navigator/response result)
+        status (navigator/status result)]
+
+    (expect 201 status)
+
+    (expect
+      "/users/thomas"
+      (-> (get-in response [:headers :location])))))
