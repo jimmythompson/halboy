@@ -6,7 +6,7 @@
     [cheshire.core :as json]))
 
 (defn- extract-links [m]
-  (:_links m))
+  (:_links m {}))
 
 (defn- extract-properties [m]
   (dissoc m :_links :_embedded))
@@ -20,7 +20,7 @@
     (map map->embedded-resource m)))
 
 (defn- extract-embedded [body]
-  (-> (get body :_embedded {})
+  (-> (:_embedded body {})
       (transform-values map->embedded-resource)))
 
 (defn- links->map [resource]

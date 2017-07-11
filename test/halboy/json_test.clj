@@ -7,7 +7,7 @@
              add-link
              add-resource
              add-property]]
-    [halboy.json :refer [json->resource resource->json]]
+    [halboy.json :as haljson]
     [cheshire.core :as json]))
 
 (let [resource
@@ -71,9 +71,45 @@
   ; resource->json should marshal a resource into some json
   (expect
     json-representation
-    (resource->json resource))
+    (haljson/resource->json resource))
 
   ; json->resource should parse some json into a resource
   (expect
     resource
-    (json->resource json-representation)))
+    (haljson/json->resource json-representation)))
+
+; map->resource should parse links
+(expect
+  (-> (new-resource)
+      (add-link :self {:href "/orders"}))
+  (haljson/map->resource {:_links {:self {:href "/orders"}}}))
+
+; map->resource should include all information about a link
+(expect
+  (-> (new-resource)
+      (add-link :ea:find {:href      "/orders{?id}",
+                          :templated true}))
+  (haljson/map->resource {:_links {:ea:find {:href      "/orders{?id}",
+                                             :templated true}}}))
+
+; map->resource should parse arrays of links
+(expect
+  (-> (new-resource)
+      (add-link :ea:admin {:href "/admins/2"})
+      (add-link :ea:admin {:href "/admins/5"}))
+  (haljson/map->resource {:_links {:ea:admin [{:href "/admins/2"}
+                                              {:href "/admins/5"}]}}))
+
+; map->resource should parse embedded resources
+(let [order-resource (-> (new-resource)
+                         (add-link :self {:href "/orders/124"}))]
+  (expect
+    (-> (new-resource)
+        (add-resource :ea:order order-resource))
+    (haljson/map->resource {:_embedded {:ea:order {:_links {:self {:href "/orders/124"}}}}})))
+
+; map->resource should parse properties
+(expect
+  (-> (new-resource)
+      (add-property :total 20.0))
+  (haljson/map->resource {:total 20.0}))
