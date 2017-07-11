@@ -9,14 +9,14 @@
   (:_links m {}))
 
 (defn- extract-properties [m]
-  (dissoc m :_links :_embedded))
+  (-> (dissoc m :_links :_embedded)
+      (or {})))
 
 (defn- map->embedded-resource [m]
   (if (map? m)
-    (hal/new-resource
-      (extract-links m)
-      {}
-      (extract-properties m))
+    (-> (hal/new-resource)
+        (hal/add-links (extract-links m))
+        (hal/add-properties (extract-properties m)))
     (map map->embedded-resource m)))
 
 (defn- extract-embedded [body]
@@ -46,10 +46,10 @@
   "Parses a map representing a HAL+JSON response into a
   resource"
   [m]
-  (hal/new-resource
-    (extract-links m)
-    (extract-embedded m)
-    (extract-properties m)))
+  (-> (hal/new-resource)
+      (hal/add-links (extract-links m))
+      (hal/add-resources (extract-embedded m))
+      (hal/add-properties (extract-properties m))))
 
 (defn json->resource
   "Parses a HAL+JSON string into a resource"

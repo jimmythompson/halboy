@@ -21,7 +21,7 @@
 
 (defn- create-user [name]
   (-> (resource/new-resource)
-      (resource/add-link :self (create-url base-url (format "/users/%s" name)))
+      (resource/add-link :self {:href (create-url base-url (format "/users/%s" name))})
       (resource/add-property :name (capitalize name))))
 
 ; should be able to navigate through links in an API
@@ -35,7 +35,7 @@
       (create-url base-url "/users")
       {:status 200
        :body   (-> (resource/new-resource)
-                   (resource/add-link :self "/users")
+                   (resource/add-link :self {:href "/users"})
                    (resource/add-resources
                      :users (create-user "fred")
                      :users (create-user "sue")
@@ -64,7 +64,7 @@
       (create-url base-url "/users") {:admin true}
       {:status 200
        :body   (-> (resource/new-resource)
-                   (resource/add-link :self "/users")
+                   (resource/add-link :self {:href "/users"})
                    (resource/add-resources
                      :users (create-user "fred")
                      :users (create-user "sue")
