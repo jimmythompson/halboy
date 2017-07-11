@@ -13,8 +13,10 @@
 
 (defn new-resource
   "Creates a new HAL resource"
-  []
-  (->Resource {} {} {}))
+  ([]
+   (->Resource {} {} {}))
+  ([self-link]
+   (->Resource {:self self-link} {} {})))
 
 (defn get-link
   "Gets a link from a resource"
@@ -49,6 +51,15 @@
 (defn add-links [resource & args]
   "Adds each rel->link to the resource"
   (apply-pairs-or-map add-link resource args))
+
+(defn add-href [resource rel href]
+  "Adds a link with the given href to a resource. If the rel
+  is already present, the values will form a vector."
+  (add-link resource rel {:href href}))
+
+(defn add-hrefs [resource & args]
+  "Adds each rel->href to the resource"
+  (apply-pairs-or-map add-href resource args))
 
 (defn add-resource
   "Adds an embedded resource to the resource. If the key is

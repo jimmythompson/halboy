@@ -9,6 +9,12 @@
       (add-links links)
       (add-properties properties)))
 
+; should be able to add new-resource with self-link
+(expect
+  {:href "/orders"}
+  (-> (new-resource {:href "/orders"})
+      (get-link :self)))
+
 ; should be able to add and retrieve links from the resource
 (expect
   {:href "/orders"}
@@ -30,6 +36,23 @@
       (add-links
         :ea:admin {:href "/admins/2" :title "Fred"}
         :ea:admin {:href "/admins/5" :title "Kate"})
+      (get-link :ea:admin)))
+
+; should be able to add links using add-href
+(expect
+  {:href "/orders"}
+  (-> (new-resource)
+      (add-href :self "/orders")
+      (get-link :self)))
+
+; should be able to add multiple hrefs and they should stack
+(expect
+  [{:href "/admins/2"}
+   {:href "/admins/5"}]
+  (-> (new-resource)
+      (add-hrefs
+        :ea:admin "/admins/2"
+        :ea:admin "/admins/5")
       (get-link :ea:admin)))
 
 ; add-resource adds an embedded resource
