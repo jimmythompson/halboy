@@ -13,10 +13,8 @@
 
 (defn new-resource
   "Creates a new HAL resource"
-  ([]
-   (->Resource {} {} {}))
-  ([links embedded properties]
-   (->Resource links embedded properties)))
+  []
+  (->Resource {} {} {}))
 
 (defn get-link
   "Gets a link from a resource"

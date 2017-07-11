@@ -5,7 +5,9 @@
     [halboy.resource :refer :all]))
 
 (defn- new-embedded-resource [links properties]
-  (new-resource links {} properties))
+  (-> (new-resource)
+      (add-links links)
+      (add-properties properties)))
 
 ; should be able to add and retrieve links from the resource
 (expect

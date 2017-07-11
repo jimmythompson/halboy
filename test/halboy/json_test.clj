@@ -17,22 +17,20 @@
                                   :templated true})
           (hal/add-link :ea:admin {:href "/admins/2", :title "Fred"})
           (hal/add-link :ea:admin {:href "/admins/5", :title "Kate"})
-          (hal/add-resource :ea:order (hal/new-resource
-                                        {:self        {:href "/orders/123"},
-                                         :ea:basket   {:href "/baskets/98712"},
-                                         :ea:customer {:href "/customers/7809"}}
-                                        {}
-                                        {:total    30.0,
-                                         :currency "USD",
-                                         :status   "shipped"}))
-          (hal/add-resource :ea:order (hal/new-resource
-                                        {:self        {:href "/orders/124"},
-                                         :ea:basket   {:href "/baskets/97213"},
-                                         :ea:customer {:href "/customers/12369"}}
-                                        {}
-                                        {:total    20.0,
-                                         :currency "USD",
-                                         :status   "processing"}))
+          (hal/add-resource :ea:order (-> (hal/new-resource)
+                                          (hal/add-links {:self        {:href "/orders/123"},
+                                                          :ea:basket   {:href "/baskets/98712"},
+                                                          :ea:customer {:href "/customers/7809"}})
+                                          (hal/add-properties {:total    30.0,
+                                                               :currency "USD",
+                                                               :status   "shipped"})))
+          (hal/add-resource :ea:order (-> (hal/new-resource)
+                                          (hal/add-links {:self        {:href "/orders/124"},
+                                                          :ea:basket   {:href "/baskets/97213"},
+                                                          :ea:customer {:href "/customers/12369"}})
+                                          (hal/add-properties {:total    20.0,
+                                                               :currency "USD",
+                                                               :status   "processing"})))
           (hal/add-property :currently-processing 14)
           (hal/add-property :shipped-today 20))
 
