@@ -2,8 +2,6 @@
 
 [![Current Version](https://clojars.org/halboy/latest-version.svg)](https://clojars.org/halboy)
 
-## License
-
 A Clojure library for all things hypermedia.
 
 * Create hypermedia resources
