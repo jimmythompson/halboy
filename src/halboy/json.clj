@@ -5,7 +5,7 @@
     [halboy.resource :as hal]
     [cheshire.core :as json]))
 
-(declare map->resource)
+(declare map->resource resource->map)
 
 (defn- extract-links [m]
   (:_links m {}))
@@ -30,9 +30,7 @@
 
 (defn- embedded-resource->map [resource]
   (if (map? resource)
-    (merge
-      (links->map resource)
-      (:properties resource))
+    (resource->map resource)
     (map embedded-resource->map resource)))
 
 (defn- embedded->map [resource]
