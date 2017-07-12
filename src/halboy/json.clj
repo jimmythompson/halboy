@@ -5,6 +5,8 @@
     [halboy.resource :as hal]
     [cheshire.core :as json]))
 
+(declare map->resource)
+
 (defn- extract-links [m]
   (:_links m {}))
 
@@ -14,9 +16,7 @@
 
 (defn- map->embedded-resource [m]
   (if (map? m)
-    (-> (hal/new-resource)
-        (hal/add-links (extract-links m))
-        (hal/add-properties (extract-properties m)))
+    (map->resource m)
     (map map->embedded-resource m)))
 
 (defn- extract-embedded [body]

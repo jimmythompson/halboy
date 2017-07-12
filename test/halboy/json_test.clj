@@ -102,6 +102,18 @@
         (hal/add-resource :ea:order order-resource))
     (haljson/map->resource {:_embedded {:ea:order {:_links {:self {:href "/orders/123"}}}}})))
 
+; map->resource should parse doubly embedded resources
+(let [purchaser-resource (-> (hal/new-resource)
+                             (hal/add-link :self {:href "/customers/1"}))
+      order-resource (-> (hal/new-resource)
+                         (hal/add-resource :customer purchaser-resource)
+                         (hal/add-link :self {:href "/orders/123"}))]
+  (expect
+    (-> (hal/new-resource)
+        (hal/add-resource :ea:order order-resource))
+    (haljson/map->resource {:_embedded {:ea:order {:_links {:self {:href "/orders/123"}}
+                                                   :_embedded {:customer {:_links {:self {:href "/customers/1"}}}}}}})))
+
 ; map->resource should parse arrays of embedded resources
 (let [first-order (-> (hal/new-resource)
                       (hal/add-link :self {:href "/orders/123"}))
