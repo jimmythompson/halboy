@@ -1,6 +1,8 @@
 # halboy
 
-[![Clojars Project](https://img.shields.io/clojars/v/halboy.svg)](https://clojars.org/halboy)
+[![Current Version](https://clojars.org/halboy/latest-version.svg)](https://clojars.org/halboy)
+
+## License
 
 A Clojure library for all things hypermedia.
 
