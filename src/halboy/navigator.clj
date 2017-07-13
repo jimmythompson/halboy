@@ -43,7 +43,7 @@
     (if (-> (= status 201)
             (and (:follow-redirects combined-options)))
       (-> (extract-redirect-location post-response)
-          (fetch-url {} combined-options))
+          (fetch-url {} options))
       post-response)))
 
 (defn- resolve-link [navigator link]
@@ -98,7 +98,13 @@
 
 (defn post
   "Posts content to a link in an API."
-  ([navigator link body]
-   (-> navigator
-       (resolve-link link)
-       (post-url body {} (:options navigator)))))
+  [navigator link body]
+  (-> navigator
+      (resolve-link link)
+      (post-url body {} (:options navigator))))
+
+(defn follow-redirect
+  "Fetches the url of the location header"
+  [navigator]
+  (-> (extract-redirect-location navigator)
+      (fetch-url {} (:options navigator))))

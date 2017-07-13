@@ -144,3 +144,29 @@
     (expect
       "/users/thomas"
       (-> (get-in response [:headers :location])))))
+
+; should be able to continue the conversation even if we do not follow redirects
+(with-fake-http
+  (concat
+    (on-discover
+      base-url
+      :users {:href "/users"})
+    (on-post-redirect
+      (create-url base-url "/users")
+      {:name "Thomas"}
+      "/users/thomas")
+    (on-get
+      (create-url base-url "/users/thomas")
+      {:status 200
+       :body   (-> (resource/new-resource)
+                   (resource/add-link :self "/users/thomas")
+                   (resource/add-property :name "Thomas")
+                   (json/resource->json))}))
+  (let [result (-> (navigator/discover base-url {:follow-redirects false})
+                   (navigator/post :users {:name "Thomas"})
+                   (navigator/follow-redirect))
+        status (navigator/status result)
+        new-user (navigator/resource result)]
+
+    (expect 200 status)
+    (expect "Thomas" (resource/get-property new-user :name))))
