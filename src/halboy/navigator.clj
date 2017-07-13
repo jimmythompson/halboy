@@ -9,7 +9,10 @@
             [halboy.params :as params])
   (:import (java.net URL)))
 
-(defrecord Navigator [href response resource])
+(def default-options
+  {:follow-redirects true})
+
+(defrecord Navigator [href options response resource])
 
 (defn- resolve-url [url endpoint]
   (-> (URL. url)
@@ -21,30 +24,26 @@
         endpoint (get-in navigator [:response :headers :location])]
     (resolve-url base-url endpoint)))
 
-(defn- response->Navigator [response]
+(defn- response->Navigator [response options]
   (let [current-url (get-in response [:opts :url])
         resource (-> (:body response)
                      json->resource)]
-    (->Navigator
-      current-url
-      response
-      resource)))
+    (->Navigator current-url options response resource)))
 
-(defn- fetch-url
-  ([url]
-   (fetch-url url {}))
-  ([url params]
-   (-> (GET url {:query-params (stringify-keys params)})
-       response->Navigator)))
+(defn- fetch-url [url params options]
+  (let [combined-options (merge default-options options)]
+    (-> (GET url {:query-params (stringify-keys params)})
+        (response->Navigator combined-options))))
 
-(defn- post-url [url body options]
-  (let [post-response (-> (POST url {:body (json/generate-string body)})
-                          (response->Navigator))
+(defn- post-url [url body params options]
+  (let [combined-options (merge default-options options)
+        post-response (-> (POST url {:body (json/generate-string body)})
+                          (response->Navigator options))
         status (get-in post-response [:response :status])]
-    (if (and (= status 201)
-             (:follow-redirect options true))
+    (if (-> (= status 201)
+            (and (:follow-redirects combined-options)))
       (-> (extract-redirect-location post-response)
-          (fetch-url))
+          (fetch-url {} combined-options))
       post-response)))
 
 (defn- resolve-link [navigator link]
@@ -59,6 +58,11 @@
   "Gets the current location of the navigator"
   [navigator]
   (:href navigator))
+
+(defn options
+  "Gets the navigation options"
+  [navigator]
+  (:options navigator))
 
 (defn resource
   "Gets the resource from the navigator"
@@ -78,8 +82,10 @@
 
 (defn discover
   "Starts a conversation with an API. Use this on the discovery endpoint."
-  [href]
-  (fetch-url href))
+  ([href]
+   (discover href {}))
+  ([href options]
+   (fetch-url href {} options)))
 
 (defn get
   "Fetches the contents of a link in an API."
@@ -88,13 +94,11 @@
   ([navigator link params]
    (-> navigator
        (resolve-link link)
-       (fetch-url params))))
+       (fetch-url params (:options navigator)))))
 
 (defn post
   "Posts content to a link in an API."
   ([navigator link body]
-   (post navigator link body {}))
-  ([navigator link body options]
    (-> navigator
        (resolve-link link)
-       (post-url body options))))
+       (post-url body {} (:options navigator)))))

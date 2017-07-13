@@ -134,10 +134,8 @@
       (create-url base-url "/users")
       {:name "Thomas"}
       "/users/thomas"))
-  (let [result (-> (navigator/discover base-url)
-                   (navigator/post :users
-                                   {:name "Thomas"}
-                                   {:follow-redirect false}))
+  (let [result (-> (navigator/discover base-url {:follow-redirects false})
+                   (navigator/post :users {:name "Thomas"}))
         response (navigator/response result)
         status (navigator/status result)]
 
