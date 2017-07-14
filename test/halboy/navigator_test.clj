@@ -1,5 +1,4 @@
 (ns halboy.navigator-test
-  (:use clojure.pprint)
   (:use org.httpkit.fake)
   (:require [expectations :refer :all]
             [clojure.string :refer [capitalize]]

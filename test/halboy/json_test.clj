@@ -1,5 +1,4 @@
 (ns halboy.json-test
-  (:use clojure.pprint)
   (:require
     [expectations :refer :all]
     [halboy.resource :as hal]
