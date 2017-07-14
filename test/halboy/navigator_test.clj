@@ -82,6 +82,35 @@
       ["Fred" "Sue" "Mary"]
       (map #(resource/get-property % :name) users))))
 
+; should be able to navigate with a mixture of template and query params
+(with-fake-http
+  (concat
+    (on-discover
+      base-url
+      :friends {:href      "/users/{id}/friends{?mutual}"
+                  :templated true})
+    (on-get
+      (create-url base-url "/users/thomas/friends") {:mutual true}
+      {:status 200
+       :body   (-> (resource/new-resource)
+                   (resource/add-link :self {:href "/users/thomas/friends"})
+                   (resource/add-resources
+                     :users (create-user "fred")
+                     :users (create-user "sue")
+                     :users (create-user "mary"))
+                   (json/resource->json))}))
+  (let [result (-> (navigator/discover base-url)
+                   (navigator/get :friends {:id "thomas" :mutual true}))
+        status (navigator/status result)
+        users (-> (navigator/resource result)
+                  (resource/get-resource :users))]
+
+    (expect 200 status)
+
+    (expect
+      ["Fred" "Sue" "Mary"]
+      (map #(resource/get-property % :name) users))))
+
 ; should be able to create resources in an API
 (with-fake-http
   (concat
@@ -106,6 +135,32 @@
 
     (expect 200 status)
     (expect "Thomas" (resource/get-property new-user :name))))
+
+; should be able to use template params when creating resources
+(with-fake-http
+  (concat
+    (on-discover
+      base-url
+      :useritems {:href      "/users/{id}/items"
+                  :templated true})
+    (on-post-redirect
+      (create-url base-url "/users/thomas/items")
+      {:name "Sponge"}
+      "/users/thomas/items/1")
+    (on-get
+      (create-url base-url "/users/thomas/items/1")
+      {:status 200
+       :body   (-> (resource/new-resource)
+                   (resource/add-link :self "/users/thomas/items/1")
+                   (resource/add-property :name "Sponge")
+                   (json/resource->json))}))
+  (let [result (-> (navigator/discover base-url)
+                   (navigator/post :useritems {:id "thomas"} {:name "Sponge"}))
+        status (navigator/status result)
+        new-item (navigator/resource result)]
+
+    (expect 200 status)
+    (expect "Sponge" (resource/get-property new-item :name))))
 
 ; should not follow location headers when the status is not 201
 (with-fake-http

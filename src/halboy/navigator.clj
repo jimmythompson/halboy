@@ -46,13 +46,13 @@
           (fetch-url {} options))
       post-response)))
 
-(defn- resolve-link [navigator link]
-  (let [base (:href navigator)
-        relative-url (-> navigator
-                         :resource
-                         (resource/get-href link)
-                         (params/expand-link {}))]
-    (resolve-url base relative-url)))
+(defn- resolve-absolute-href [navigator href]
+  (resolve-url (:href navigator) href))
+
+(defn- resolve-link [navigator link params]
+  (-> (:resource navigator)
+      (resource/get-href link)
+      (params/build-query params)))
 
 (defn location
   "Gets the current location of the navigator"
@@ -92,16 +92,20 @@
   ([navigator link]
    (get navigator link {}))
   ([navigator link params]
-   (-> navigator
-       (resolve-link link)
-       (fetch-url params (:options navigator)))))
+   (let [resolved-link (resolve-link navigator link params)
+         href (resolve-absolute-href navigator (:href resolved-link))
+         query-params (:query-params resolved-link)]
+     (fetch-url href query-params (:options navigator)))))
 
 (defn post
   "Posts content to a link in an API."
-  [navigator link body]
-  (-> navigator
-      (resolve-link link)
-      (post-url body {} (:options navigator))))
+  ([navigator link body]
+   (post navigator link {} body))
+  ([navigator link params body]
+   (let [resolved-link (resolve-link navigator link params)
+         href (resolve-absolute-href navigator (:href resolved-link))
+         query-params (:query-params resolved-link)]
+     (post-url href body query-params (:options navigator)))))
 
 (defn follow-redirect
   "Fetches the url of the location header"
