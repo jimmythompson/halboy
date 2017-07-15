@@ -102,7 +102,7 @@ You can also marshal your hal resources to and from maps, or JSON.
 
 Provided you're calling a HAL+JSON API, you can discover the API and navigate
 through its links. When you've found what you want, you call
-`navigator/resource` and you get a plain old hal reosurce, which you can inspect
+`navigator/resource` and you get a plain old HAL resource, which you can inspect
 using any of the methods above.
 
 ```clojure
@@ -125,9 +125,14 @@ using any of the methods above.
 ;  }
 ;}
 
-(-> (navigator/discover "https://api.example.com/")
-    (navigator/get :users)
-    (navigator/location))
+(def users-result
+     (-> (navigator/discover "https://api.example.com/")
+         (navigator/get :users))
+
+(navigator/status users-result)
+; 200
+
+(navigator/location users-result)
 ; "https://api.example.com/users"
 
 (-> (navigator/discover "https://api.example.com/")
