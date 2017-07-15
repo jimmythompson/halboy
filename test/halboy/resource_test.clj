@@ -1,13 +1,7 @@
 (ns halboy.resource-test
   (:require
     [expectations :refer :all]
-    [halboy.resource :as halboy]
     [halboy.resource :refer :all]))
-
-(defn- new-embedded-resource [links properties]
-  (-> (new-resource)
-      (add-links links)
-      (add-properties properties)))
 
 ; should be able to add new-resource with self-link
 (expect
@@ -57,56 +51,245 @@
 
 ; add-resource adds an embedded resource
 (expect
-  (new-embedded-resource
-    {:self        {:href "/orders/123"}
-     :ea:basket   {:href "/baskets/98712"}
-     :ea:customer {:href "/customers/7809"}}
-    {:total    30.0
-     :currency "USD"
-     :status   "shipped"})
+  (-> (new-resource)
+      (add-links {:self        {:href "/orders/123"}
+                  :ea:basket   {:href "/baskets/98712"}
+                  :ea:customer {:href "/customers/7809"}})
+      (add-properties {:total    30.0
+                       :currency "USD"
+                       :status   "shipped"}))
   (-> (new-resource)
       (add-resource
-        :ea:order (new-embedded-resource
-                    {:self        {:href "/orders/123"}
-                     :ea:basket   {:href "/baskets/98712"}
-                     :ea:customer {:href "/customers/7809"}}
-                    {:total    30.0
-                     :currency "USD"
-                     :status   "shipped"}))
+        :ea:order
+        (-> (new-resource)
+            (add-links {:self        {:href "/orders/123"}
+                        :ea:basket   {:href "/baskets/98712"}
+                        :ea:customer {:href "/customers/7809"}})
+            (add-properties {:total    30.0
+                             :currency "USD"
+                             :status   "shipped"})))
+      (get-resource :ea:order)))
+
+; should be able to add a list of resources
+(expect
+  [(-> (new-resource)
+       (add-links {:self        {:href "/orders/123"}
+                   :ea:basket   {:href "/baskets/98712"}
+                   :ea:customer {:href "/customers/7809"}})
+       (add-properties {:total    30.0
+                        :currency "USD"
+                        :status   "shipped"}))
+   (-> (new-resource)
+       (add-links {:self        {:href "/orders/124"}
+                   :ea:basket   {:href "/baskets/97213"}
+                   :ea:customer {:href "/customers/12369"}})
+       (add-properties {:total    20.0
+                        :currency "USD"
+                        :status   "processing"}))]
+  (-> (new-resource)
+      (add-resource
+        :ea:order
+        (list (-> (new-resource)
+                  (add-links {:self        {:href "/orders/123"}
+                              :ea:basket   {:href "/baskets/98712"}
+                              :ea:customer {:href "/customers/7809"}})
+                  (add-properties {:total    30.0
+                                   :currency "USD"
+                                   :status   "shipped"}))
+              (-> (new-resource)
+                  (add-links {:self        {:href "/orders/124"}
+                              :ea:basket   {:href "/baskets/97213"}
+                              :ea:customer {:href "/customers/12369"}})
+                  (add-properties {:total    20.0
+                                   :currency "USD"
+                                   :status   "processing"}))))
+      (get-resource :ea:order)))
+
+; should be able to add a vector of resources
+(expect
+  [(-> (new-resource)
+       (add-links {:self        {:href "/orders/123"}
+                   :ea:basket   {:href "/baskets/98712"}
+                   :ea:customer {:href "/customers/7809"}})
+       (add-properties {:total    30.0
+                        :currency "USD"
+                        :status   "shipped"}))
+   (-> (new-resource)
+       (add-links {:self        {:href "/orders/124"}
+                   :ea:basket   {:href "/baskets/97213"}
+                   :ea:customer {:href "/customers/12369"}})
+       (add-properties {:total    20.0
+                        :currency "USD"
+                        :status   "processing"}))]
+  (-> (new-resource)
+      (add-resource
+        :ea:order
+        [(-> (new-resource)
+             (add-links {:self        {:href "/orders/123"}
+                         :ea:basket   {:href "/baskets/98712"}
+                         :ea:customer {:href "/customers/7809"}})
+             (add-properties {:total    30.0
+                              :currency "USD"
+                              :status   "shipped"}))
+         (-> (new-resource)
+             (add-links {:self        {:href "/orders/124"}
+                         :ea:basket   {:href "/baskets/97213"}
+                         :ea:customer {:href "/customers/12369"}})
+             (add-properties {:total    20.0
+                              :currency "USD"
+                              :status   "processing"}))])
+      (get-resource :ea:order)))
+
+; should append resources to existing lists of resources
+(expect
+  [(-> (new-resource)
+       (add-links {:self        {:href "/orders/123"}
+                   :ea:basket   {:href "/baskets/98712"}
+                   :ea:customer {:href "/customers/7809"}})
+       (add-properties {:total    30.0
+                        :currency "USD"
+                        :status   "shipped"}))
+   (-> (new-resource)
+       (add-links {:self        {:href "/orders/124"}
+                   :ea:basket   {:href "/baskets/97213"}
+                   :ea:customer {:href "/customers/12369"}})
+       (add-properties {:total    20.0
+                        :currency "USD"
+                        :status   "processing"}))
+   (-> (new-resource)
+       (add-links {:self        {:href "/orders/125"}
+                   :ea:basket   {:href "/baskets/98716"}
+                   :ea:customer {:href "/customers/2416"}})
+       (add-properties {:total    18.0
+                        :currency "GBP"
+                        :status   "shipped"}))]
+  (-> (new-resource)
+      (add-resource
+        :ea:order
+        [(-> (new-resource)
+             (add-links {:self        {:href "/orders/123"}
+                         :ea:basket   {:href "/baskets/98712"}
+                         :ea:customer {:href "/customers/7809"}})
+             (add-properties {:total    30.0
+                              :currency "USD"
+                              :status   "shipped"}))
+         (-> (new-resource)
+             (add-links {:self        {:href "/orders/124"}
+                         :ea:basket   {:href "/baskets/97213"}
+                         :ea:customer {:href "/customers/12369"}})
+             (add-properties {:total    20.0
+                              :currency "USD"
+                              :status   "processing"}))])
+      (add-resource
+        :ea:order
+        (-> (new-resource)
+            (add-links {:self        {:href "/orders/125"}
+                        :ea:basket   {:href "/baskets/98716"}
+                        :ea:customer {:href "/customers/2416"}})
+            (add-properties {:total    18.0
+                             :currency "GBP"
+                             :status   "shipped"})))
+      (get-resource :ea:order)))
+
+; should merge two lists of resources added separately
+(expect
+  [(-> (new-resource)
+       (add-links {:self        {:href "/orders/123"}
+                   :ea:basket   {:href "/baskets/98712"}
+                   :ea:customer {:href "/customers/7809"}})
+       (add-properties {:total    30.0
+                        :currency "USD"
+                        :status   "shipped"}))
+   (-> (new-resource)
+       (add-links {:self        {:href "/orders/124"}
+                   :ea:basket   {:href "/baskets/97213"}
+                   :ea:customer {:href "/customers/12369"}})
+       (add-properties {:total    20.0
+                        :currency "USD"
+                        :status   "processing"}))
+   (-> (new-resource)
+       (add-links {:self        {:href "/orders/125"}
+                   :ea:basket   {:href "/baskets/98716"}
+                   :ea:customer {:href "/customers/2416"}})
+       (add-properties {:total    18.0
+                        :currency "GBP"
+                        :status   "shipped"}))
+   (-> (new-resource)
+       (add-links {:self        {:href "/orders/127"}
+                   :ea:basket   {:href "/baskets/98723"}
+                   :ea:customer {:href "/customers/2161"}})
+       (add-properties {:total    28.0
+                        :currency "USD"
+                        :status   "shipped"}))]
+  (-> (new-resource)
+      (add-resource
+        :ea:order
+        [(-> (new-resource)
+             (add-links {:self        {:href "/orders/123"}
+                         :ea:basket   {:href "/baskets/98712"}
+                         :ea:customer {:href "/customers/7809"}})
+             (add-properties {:total    30.0
+                              :currency "USD"
+                              :status   "shipped"}))
+         (-> (new-resource)
+             (add-links {:self        {:href "/orders/124"}
+                         :ea:basket   {:href "/baskets/97213"}
+                         :ea:customer {:href "/customers/12369"}})
+             (add-properties {:total    20.0
+                              :currency "USD"
+                              :status   "processing"}))])
+      (add-resource
+        :ea:order
+        (list (-> (new-resource)
+                  (add-links {:self        {:href "/orders/125"}
+                              :ea:basket   {:href "/baskets/98716"}
+                              :ea:customer {:href "/customers/2416"}})
+                  (add-properties {:total    18.0
+                                   :currency "GBP"
+                                   :status   "shipped"}))
+              (-> (new-resource)
+                  (add-links {:self        {:href "/orders/127"}
+                              :ea:basket   {:href "/baskets/98723"}
+                              :ea:customer {:href "/customers/2161"}})
+                  (add-properties {:total    28.0
+                                   :currency "USD"
+                                   :status   "shipped"}))))
       (get-resource :ea:order)))
 
 ; should be able to add multiple resources and they should stack
 (expect
-  [(new-embedded-resource
-     {:self        {:href "/orders/123"}
-      :ea:basket   {:href "/baskets/98712"}
-      :ea:customer {:href "/customers/7809"}}
-     {:total    30.0
-      :currency "USD"
-      :status   "shipped"})
-   (new-embedded-resource
-     {:self        {:href "/orders/124"}
-      :ea:basket   {:href "/baskets/97213"}
-      :ea:customer {:href "/customers/12369"}}
-     {:total    20.0
-      :currency "USD"
-      :status   "processing"})]
+  [(-> (new-resource)
+       (add-links {:self        {:href "/orders/123"}
+                   :ea:basket   {:href "/baskets/98712"}
+                   :ea:customer {:href "/customers/7809"}})
+       (add-properties {:total    30.0
+                        :currency "USD"
+                        :status   "shipped"}))
+   (-> (new-resource)
+       (add-links {:self        {:href "/orders/124"}
+                   :ea:basket   {:href "/baskets/97213"}
+                   :ea:customer {:href "/customers/12369"}})
+       (add-properties {:total    20.0
+                        :currency "USD"
+                        :status   "processing"}))]
   (-> (new-resource)
       (add-resources
-        :ea:order (new-embedded-resource
-                    {:self        {:href "/orders/123"}
-                     :ea:basket   {:href "/baskets/98712"}
-                     :ea:customer {:href "/customers/7809"}}
-                    {:total    30.0
-                     :currency "USD"
-                     :status   "shipped"})
-        :ea:order (new-embedded-resource
-                    {:self        {:href "/orders/124"}
-                     :ea:basket   {:href "/baskets/97213"}
-                     :ea:customer {:href "/customers/12369"}}
-                    {:total    20.0
-                     :currency "USD"
-                     :status   "processing"}))
+        :ea:order
+        (-> (new-resource)
+            (add-links {:self        {:href "/orders/123"}
+                        :ea:basket   {:href "/baskets/98712"}
+                        :ea:customer {:href "/customers/7809"}})
+            (add-properties {:total    30.0
+                             :currency "USD"
+                             :status   "shipped"}))
+        :ea:order
+        (-> (new-resource)
+            (add-links {:self        {:href "/orders/124"}
+                        :ea:basket   {:href "/baskets/97213"}
+                        :ea:customer {:href "/customers/12369"}})
+            (add-properties {:total    20.0
+                             :currency "USD"
+                             :status   "processing"})))
       (get-resource :ea:order)))
 
 ; should be able to add and retrieve properties from the resource

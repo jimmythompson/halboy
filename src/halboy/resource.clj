@@ -4,10 +4,9 @@
             [halboy.argutils :refer [apply-pairs-or-map]]))
 
 (defn- create-or-append [l r]
-  (cond
-    (nil? l) r
-    (vector? l) (conj l r)
-    :else [l r]))
+  (if (not (nil? l))
+    (flatten [l r])
+    r))
 
 (defrecord Resource [links embedded properties])
 
