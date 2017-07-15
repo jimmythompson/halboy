@@ -93,8 +93,10 @@ You can also marshal your hal resources to and from maps, or JSON.
 
 ### Navigation
 
-Provided you're calling a HAL+JSON API, you can discover and navigate through
-links.
+Provided you're calling a HAL+JSON API, you can discover the API and navigate
+through its links. When you've found what you want, you call
+`navigator/resource` and you get a plain old hal reosurce, which you can inspect
+using any of the methods above.
 
 ```clojure
 (require '[halboy.resource :as hal])
