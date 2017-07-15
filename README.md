@@ -20,8 +20,10 @@ With Halboy you can create resources, and pull information from them.
 (def my-resource
     (-> (hal/new-resource {:href "/orders/123"})
         (hal/add-link :creator {:href "/users/rob"})
-        (hal/add-resource :items (-> (hal/new-resource {:href "/items/534"})
-                                     (hal/add-property :price 25.48)))
+        (hal/add-resource :discount (-> (hal/new-resource {:href "/discounts/1256"})
+                                         (hal/add-property :discount-percentage 10)))
+        (hal/add-resource :items [(-> (hal/new-resource {:href "/items/534"})
+                                     (hal/add-property :price 25.48))])
         (hal/add-property :state :dispatching)))
 
 (hal/get-link my-resource :self)
@@ -33,7 +35,12 @@ With Halboy you can create resources, and pull information from them.
 (hal/get-property my-resource :state)
 ; :dispatching
 
+(-> (hal/get-resource my-resource :discount)
+    (hal/get-property :discount-percentage))
+; 10
+
 (-> (hal/get-resource my-resource :items)
+    (first)
     (hal/get-property :price))
 ; 25.48
 ```
