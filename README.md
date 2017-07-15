@@ -124,7 +124,7 @@ using any of the methods above.
 ; "https://api.example.com/users"
 
 (-> (navigator/discover "https://api.example.com/")
-    (navigator/get :users {:id "rob"})
+    (navigator/get :user {:id "rob"})
     (navigator/location))
 ; "https://api.example.com/users/rob"
 
