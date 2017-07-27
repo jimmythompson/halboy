@@ -31,6 +31,11 @@
      :body   (json/generate-string body)}
     response]))
 
+(defn on-delete
+  ([url response]
+   [{:method :delete :url url}
+    response]))
+
 (defn on-post-redirect
   ([url location]
    (on-post url {:status  201

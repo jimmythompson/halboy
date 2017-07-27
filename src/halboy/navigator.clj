@@ -5,7 +5,7 @@
             [halboy.resource :as resource]
             [halboy.data :refer [transform-values]]
             [halboy.json :refer [json->resource resource->json]]
-            [halboy.http :refer [GET POST]]
+            [halboy.http :refer [GET POST DELETE]]
             [halboy.params :as params])
   (:import (java.net URL)))
 
@@ -45,6 +45,11 @@
       (-> (extract-redirect-location post-response)
           (fetch-url {} options))
       post-response)))
+
+(defn- delete-url [url options]
+  (let [combined-options (merge default-options options)]
+    (-> (DELETE url)
+        (response->Navigator options))))
 
 (defn- resolve-absolute-href [navigator href]
   (resolve-url (:href navigator) href))
@@ -106,6 +111,15 @@
          href (resolve-absolute-href navigator (:href resolved-link))
          query-params (:query-params resolved-link)]
      (post-url href body query-params (:options navigator)))))
+
+(defn delete
+  "Delete content of a link in an API."
+  ([navigator link]
+   (delete navigator link {}))
+  ([navigator link params]
+   (let [resolved-link (resolve-link navigator link params)
+         href (resolve-absolute-href navigator (:href resolved-link))]
+     (delete-url href (:options navigator)))))
 
 (defn follow-redirect
   "Fetches the url of the location header"

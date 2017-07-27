@@ -13,3 +13,7 @@
 (defn POST
   ([url] (POST url {}))
   ([url options] @(http/post url (merge default-http-options options))))
+
+(defn DELETE
+  ([url] (DELETE url {}))
+  ([url options] @(http/delete url (merge default-http-options options))))
