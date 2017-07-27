@@ -9,6 +9,7 @@
              :refer [on-discover
                      on-get
                      on-post
+                     on-delete
                      on-post-redirect]])
   (:import (java.net URL)))
 
@@ -134,6 +135,21 @@
 
     (expect 200 status)
     (expect "Thomas" (resource/get-property new-user :name))))
+
+; should be able to remove resources in an API
+(with-fake-http
+  (concat
+    (on-discover
+      base-url
+      :user {:href      "/users/{id}"
+             :templated true})
+    (on-delete
+      (create-url base-url "/users/thomas")
+      {:status 204}))
+  (let [result (-> (navigator/discover base-url)
+                   (navigator/delete :user {:id "thomas"}))
+        status (navigator/status result)]
+    (expect 204 status)))
 
 ; should be able to use template params when creating resources
 (with-fake-http
