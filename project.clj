@@ -1,4 +1,4 @@
-(defproject halboy "1.0.1"
+(defproject halboy "1.0.2"
   :description "a hypermedia parser and navigator"
   :license {:name "MIT License"
             :url  "https://opensource.org/licenses/MIT"}
