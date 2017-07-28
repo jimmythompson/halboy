@@ -314,3 +314,10 @@
                       :shipped-today        20}))]
   (expect 14 (get-property resource :currently-processing))
   (expect 20 (get-property resource :shipped-today)))
+
+; should be able to navigate deep within properties
+(expect
+  20
+  (-> (new-resource)
+      (add-property :currently-processing {:uk 20 :de 12})
+      (get-in-properties [:currently-processing :uk])))

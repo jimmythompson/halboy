@@ -36,6 +36,10 @@
   "Gets an property from a resource"
   (get-in resource [:properties key]))
 
+(defn get-in-properties [resource keys]
+  "Navigates through the keys in properties"
+  (get-in resource (into [:properties] keys)))
+
 (defn add-link [resource rel m]
   "Adds a link to a resource. If the rel is already present,
   the values will form a vector."
