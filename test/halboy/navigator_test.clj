@@ -88,7 +88,7 @@
     (on-discover
       base-url
       :friends {:href      "/users/{id}/friends{?mutual}"
-                  :templated true})
+                :templated true})
     (on-get
       (create-url base-url "/users/thomas/friends") {:mutual true}
       {:status 200
@@ -206,14 +206,13 @@
       "/users/thomas"))
   (let [result (-> (navigator/discover base-url {:follow-redirects false})
                    (navigator/post :users {:name "Thomas"}))
-        response (navigator/response result)
         status (navigator/status result)]
 
     (expect 201 status)
 
     (expect
       "/users/thomas"
-      (-> (get-in response [:headers :location])))))
+      (navigator/get-header result :location))))
 
 ; should be able to continue the conversation even if we do not follow redirects
 (with-fake-http

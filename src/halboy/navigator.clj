@@ -19,9 +19,12 @@
       (URL. endpoint)
       (.toString)))
 
+(defn- extract-header [navigator header]
+  (get-in navigator [:response :headers header]))
+
 (defn- extract-redirect-location [navigator]
   (let [base-url (:href navigator)
-        endpoint (get-in navigator [:response :headers :location])]
+        endpoint (extract-header navigator :location)]
     (resolve-url base-url endpoint)))
 
 (defn- response->Navigator [response options]
@@ -126,3 +129,8 @@
   [navigator]
   (-> (extract-redirect-location navigator)
       (fetch-url {} (:options navigator))))
+
+(defn get-header
+  "Retrieves a specified header from the response"
+  [navigator header]
+  (extract-header navigator header))
