@@ -28,21 +28,25 @@
   (-> (get-link resource key)
       :href))
 
-(defn get-resource [resource key]
+(defn get-resource
   "Gets an embedded resource from a resource"
+  [resource key]
   (get-in resource [:embedded key]))
 
-(defn get-property [resource key]
+(defn get-property
   "Gets an property from a resource"
+  [resource key]
   (get-in resource [:properties key]))
 
-(defn get-in-properties [resource keys]
+(defn get-in-properties
   "Navigates through the keys in properties"
+  [resource keys]
   (get-in resource (into [:properties] keys)))
 
-(defn add-link [resource rel m]
+(defn add-link
   "Adds a link to a resource. If the rel is already present,
   the values will form a vector."
+  [resource rel m]
   (let [existing-links (:links resource)
         updated-link (-> (get existing-links rel)
                          (create-or-append m))]
@@ -51,17 +55,20 @@
       (:embedded resource)
       (:properties resource))))
 
-(defn add-links [resource & args]
+(defn add-links
   "Adds each rel->link to the resource"
+  [resource & args]
   (apply-pairs-or-map add-link resource args))
 
-(defn add-href [resource rel href]
+(defn add-href
   "Adds a link with the given href to a resource. If the rel
   is already present, the values will form a vector."
+  [resource rel href]
   (add-link resource rel {:href href}))
 
-(defn add-hrefs [resource & args]
+(defn add-hrefs
   "Adds each rel->href to the resource"
+  [resource & args]
   (apply-pairs-or-map add-href resource args))
 
 (defn add-resource
@@ -82,9 +89,10 @@
   [resource & args]
   (apply-pairs-or-map add-resource resource args))
 
-(defn add-property [resource rel r]
+(defn add-property
   "Adds a new property to the resource. If the key is already
   present, it will be overwritten."
+  [resource rel r]
   (let [existing-properties (:properties resource)]
     (->Resource
       (:links resource)
