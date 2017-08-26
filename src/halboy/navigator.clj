@@ -5,7 +5,7 @@
             [halboy.resource :as resource]
             [halboy.data :refer [transform-values]]
             [halboy.json :refer [json->resource resource->json]]
-            [halboy.http :refer [GET POST DELETE]]
+            [halboy.http :refer [GET POST PUT DELETE]]
             [halboy.params :as params])
   (:import (java.net URL)))
 
@@ -48,6 +48,17 @@
       (-> (extract-redirect-location post-response)
           (fetch-url {} options))
       post-response)))
+
+(defn- put-url [url body params options]
+  (let [combined-options (merge default-options options)
+        put-response (-> (PUT url {:body (json/generate-string body)})
+                         (response->Navigator options))
+        status (get-in put-response [:response :status])]
+    (if (-> (= status 201)
+            (and (:follow-redirects combined-options)))
+      (-> (extract-redirect-location put-response)
+          (fetch-url {} options))
+      put-response)))
 
 (defn- delete-url [url options]
   (let [combined-options (merge default-options options)]
@@ -114,6 +125,16 @@
          href (resolve-absolute-href navigator (:href resolved-link))
          query-params (:query-params resolved-link)]
      (post-url href body query-params (:options navigator)))))
+
+(defn put
+  "Puts content to a link in an API."
+  ([navigator link body]
+   (put navigator link {} body))
+  ([navigator link params body]
+   (let [resolved-link (resolve-link navigator link params)
+         href (resolve-absolute-href navigator (:href resolved-link))
+         query-params (:query-params resolved-link)]
+     (put-url href body query-params (:options navigator)))))
 
 (defn delete
   "Delete content of a link in an API."

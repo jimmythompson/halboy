@@ -9,8 +9,10 @@
              :refer [on-discover
                      on-get
                      on-post
-                     on-delete
-                     on-post-redirect]])
+                     on-post-redirect
+                     on-put
+                     on-put-redirect
+                     on-delete]])
   (:import (java.net URL)))
 
 (def base-url "https://service.example.com")
@@ -239,3 +241,53 @@
 
     (expect 200 status)
     (expect "Thomas" (resource/get-property new-user :name))))
+
+; should be able to put to a resource
+(with-fake-http
+  (concat
+    (on-discover
+      base-url
+      :user {:href      "/users/{id}"
+             :templated true})
+    (on-put
+      (create-url base-url "/users/thomas")
+      {:name "Thomas"}
+      {:status 200
+       :body   (-> (resource/new-resource)
+                   (resource/add-link :self "/users/thomas")
+                   (resource/add-property :name "Thomas")
+                   (json/resource->json))}))
+  (let [result (-> (navigator/discover base-url)
+                   (navigator/put :user {:id "thomas"} {:name "Thomas"}))
+        status (navigator/status result)
+        user (navigator/resource result)]
+
+    (expect 200 status)
+    (expect "Thomas" (resource/get-property user :name))))
+
+; should follow redirects when putting to a resource returns a 201
+(with-fake-http
+  (concat
+    (on-discover
+      base-url
+      :user {:href      "/users/{id}"
+             :templated true})
+    (on-put-redirect
+      (create-url base-url "/users/thomas")
+      {:name "Thomas"}
+      "/users/thomas")
+    (on-get
+      (create-url base-url "/users/thomas")
+      {:status 200
+       :body   (-> (resource/new-resource)
+                   (resource/add-link :self "/users/thomas")
+                   (resource/add-property :name "Thomas")
+                   (json/resource->json))}))
+  (let [result (-> (navigator/discover base-url)
+                   (navigator/put :user {:id "thomas"} {:name "Thomas"}))
+        status (navigator/status result)
+        user (navigator/resource result)]
+
+    (expect 200 status)
+    (expect "Thomas" (resource/get-property user :name))))
+
