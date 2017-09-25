@@ -1,5 +1,6 @@
 (ns halboy.http
-  (:require [org.httpkit.client :as http]))
+  (:require [org.httpkit.client :as http]
+            [halboy.argutils :refer [deep-merge]]))
 
 (def default-http-options
   {:as        :text
@@ -8,16 +9,16 @@
 
 (defn GET
   ([url] (GET url {}))
-  ([url options] @(http/get url (merge default-http-options options))))
+  ([url options] @(http/get url (deep-merge default-http-options options))))
 
 (defn POST
   ([url] (POST url {}))
-  ([url options] @(http/post url (merge default-http-options options))))
+  ([url options] @(http/post url (deep-merge default-http-options options))))
 
 (defn PUT
   ([url] (PUT url {}))
-  ([url options] @(http/put url (merge default-http-options options))))
+  ([url options] @(http/put url (deep-merge default-http-options options))))
 
 (defn DELETE
   ([url] (DELETE url {}))
-  ([url options] @(http/delete url (merge default-http-options options))))
+  ([url options] @(http/delete url (deep-merge default-http-options options))))

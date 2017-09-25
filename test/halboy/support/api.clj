@@ -62,3 +62,10 @@
    [{:method :delete :url url}
     response]))
 
+(defn on-delete-with-headers
+  [url headers response]
+  [{:method :delete
+    :url url
+    :headers headers}
+   response])
+

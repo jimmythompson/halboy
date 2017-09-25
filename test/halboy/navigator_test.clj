@@ -12,7 +12,8 @@
                      on-post-redirect
                      on-put
                      on-put-redirect
-                     on-delete]])
+                     on-delete
+                     on-delete-with-headers]])
   (:import (java.net URL)))
 
 (def base-url "https://service.example.com")
@@ -291,3 +292,23 @@
     (expect 200 status)
     (expect "Thomas" (resource/get-property user :name))))
 
+; should be able to set header
+(let [resource-url (create-url base-url "/users/thomas")]
+  (with-fake-http
+    (concat
+      (on-discover
+        base-url
+        :user {:href      "/users/{id}"
+               :templated true})
+      (on-delete-with-headers
+        resource-url
+        {"Content-Type" "application/json"
+         "Accept"       "application/hal+json"
+         "X-resource-location" resource-url}
+        {:status 204}))
+    (let [result (->
+                   (navigator/discover base-url)
+                   (navigator/set-header "X-resource-location" resource-url)
+                   (navigator/delete :user {:id "thomas"}))
+          status (navigator/status result)]
+      (expect 204 status))))
