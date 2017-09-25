@@ -6,7 +6,8 @@
             [halboy.data :refer [transform-values]]
             [halboy.json :refer [json->resource resource->json]]
             [halboy.http :refer [GET POST PUT DELETE]]
-            [halboy.params :as params])
+            [halboy.params :as params]
+            [halboy.argutils :refer [deep-merge]])
   (:import (java.net URL)))
 
 (def default-options
@@ -61,8 +62,8 @@
       put-response)))
 
 (defn- delete-url [url options]
-  (let [combined-options (merge default-options options)]
-    (-> (DELETE url)
+  (let [combined-options (deep-merge default-options options)]
+    (-> (DELETE url options)
         (response->Navigator options))))
 
 (defn- resolve-absolute-href [navigator href]
@@ -155,3 +156,12 @@
   "Retrieves a specified header from the response"
   [navigator header]
   (extract-header navigator header))
+
+(defn set-header
+  "set header option for navigator"
+  [navigator header-key header-value]
+  (let [headers (or
+                  (get-in navigator [:options :headers])
+                  {})
+        updated-headers (assoc headers header-key header-value)]
+    (assoc-in navigator [:options :headers] updated-headers)))
