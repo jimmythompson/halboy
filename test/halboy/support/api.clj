@@ -35,6 +35,19 @@
      :body   (json/generate-string body)}
     response]))
 
+(defn on-post-with-headers
+  ([url headers response]
+   [{:method :post
+     :url url
+     :headers headers}
+    response])
+  ([url headers body response]
+   [{:method :post
+     :url    url
+     :headers headers
+     :body   (json/generate-string body)}
+    response]))
+
 (defn on-post-redirect
   ([url location]
    (on-post url (redirect-to location)))
