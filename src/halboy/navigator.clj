@@ -36,12 +36,14 @@
 
 (defn- fetch-url [url params options]
   (let [combined-options (merge default-options options)]
-    (-> (GET url {:query-params (stringify-keys params)})
+    (-> (GET url {:query-params (stringify-keys params)
+                  :headers (get-in options [:headers] {})})
         (response->Navigator combined-options))))
 
 (defn- post-url [url body params options]
   (let [combined-options (merge default-options options)
-        post-response (-> (POST url {:body (json/generate-string body)})
+        post-response (-> (POST url {:body (json/generate-string body)
+                                     :headers (get-in options [:headers] {})})
                           (response->Navigator options))
         status (get-in post-response [:response :status])]
     (if (-> (= status 201)
@@ -52,7 +54,8 @@
 
 (defn- put-url [url body params options]
   (let [combined-options (merge default-options options)
-        put-response (-> (PUT url {:body (json/generate-string body)})
+        put-response (-> (PUT url {:body (json/generate-string body)
+                                   :headers (get-in options [:headers] {})})
                          (response->Navigator options))
         status (get-in put-response [:response :status])]
     (if (-> (= status 201)
