@@ -8,7 +8,7 @@
             [halboy.http :refer [GET POST PUT DELETE]]
             [halboy.params :as params]
             [halboy.argutils :refer [deep-merge]])
-  (:import (java.net URL)))
+  (:import (java.net URL URI)))
 
 (def default-options
   {:follow-redirects true})
@@ -20,6 +20,10 @@
       (URL. endpoint)
       (.toString)))
 
+(defn- absolute? [url]
+  (-> (URI. url)
+      (.isAbsolute)))
+
 (defn- extract-header [navigator header]
   (get-in navigator [:response :headers header]))
 
@@ -27,6 +31,17 @@
   (let [base-url (:href navigator)
         endpoint (extract-header navigator :location)]
     (resolve-url base-url endpoint)))
+
+(defn- get-resume-location [resource options]
+  (let [resume-from (:resume-from options)
+        self-link (hal/get-href resource :self)]
+    (if resume-from
+      resume-from
+      (if (and self-link (absolute? self-link))
+        self-link
+        (throw
+          (ex-info "No :resume-from option, and self link not absolute"
+                   {:self-link-value self-link}))))))
 
 (defn- response->Navigator [response options]
   (let [current-url (get-in response [:opts :url])
@@ -36,7 +51,7 @@
 
 (defn- resource->Navigator
   [resource options]
-  (let [current-url (hal/get-href resource :self)
+  (let [current-url (get-resume-location resource options)
         response {:status nil}]
     (->Navigator current-url options response resource)))
 
@@ -122,7 +137,10 @@
    (fetch-url href {} options)))
 
 (defn resume
-  "Resumes a conversation with an API."
+  "Resumes a conversation with an API. Your resource needs a self
+  link for this to work. If your self link is not absolute, you
+  can pass an absolute url in the :resume-from key in the options
+  parameter."
   ([resource]
     (resume resource {}))
   ([resource options]

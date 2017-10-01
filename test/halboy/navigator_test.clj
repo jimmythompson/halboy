@@ -353,9 +353,9 @@
      :body   (-> (hal/new-resource)
                  (hal/add-link :self {:href "/users"})
                  (hal/add-resources
-                   :users (create-user "fred")
-                   :users (create-user "sue")
-                   :users (create-user "mary"))
+                   :users [(create-user "fred")
+                           (create-user "sue")
+                           (create-user "mary")])
                  (json/resource->json))})
   (let [resource (-> (hal/new-resource)
                      (hal/add-links
@@ -373,3 +373,47 @@
     (expect
       ["Fred" "Sue" "Mary"]
       (map #(hal/get-property % :name) users))))
+
+; should be able to hint at the location when the self link is not absolute
+(with-fake-http
+  (on-get
+    (create-url base-url "/users")
+    {:status 200
+     :body   (-> (hal/new-resource)
+                 (hal/add-link :self {:href "/users"})
+                 (hal/add-resources
+                   :users [(create-user "fred")
+                           (create-user "sue")
+                           (create-user "mary")])
+                 (json/resource->json))})
+  (let [resource (-> (hal/new-resource)
+                     (hal/add-links
+                       {:self  {:href "/"}
+                        :users {:href      "/users{?admin}"
+                                :templated true}}))
+        result (-> (navigator/resume resource {:resume-from base-url})
+                   (navigator/get :users))
+        status (navigator/status result)
+        users (-> (navigator/resource result)
+                  (hal/get-resource :users))]
+
+    (expect 200 status)
+
+    (expect
+      ["Fred" "Sue" "Mary"]
+      (map #(hal/get-property % :name) users))))
+
+; should throw an error when trying to resume a conversation
+; with a resource that lacks a self link
+(expect
+  clojure.lang.ExceptionInfo
+  (navigator/resume
+    (hal/new-resource)))
+
+; should throw an error when trying to resume a conversation
+; with a resource with a relative self link, and no :resume-from option
+(expect
+  clojure.lang.ExceptionInfo
+  (navigator/resume
+    (-> (hal/new-resource)
+        (hal/add-href :self "/users"))))
