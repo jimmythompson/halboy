@@ -344,3 +344,32 @@
           new-user (navigator/resource result)]
 
       (expect 201 status))))
+
+; should be able to resume conversations
+(with-fake-http
+  (on-get
+    (create-url base-url "/users")
+    {:status 200
+     :body   (-> (hal/new-resource)
+                 (hal/add-link :self {:href "/users"})
+                 (hal/add-resources
+                   :users (create-user "fred")
+                   :users (create-user "sue")
+                   :users (create-user "mary"))
+                 (json/resource->json))})
+  (let [resource (-> (hal/new-resource)
+                     (hal/add-links
+                       {:self  {:href base-url}
+                        :users {:href      "/users{?admin}"
+                                :templated true}}))
+        result (-> (navigator/resume resource)
+                   (navigator/get :users))
+        status (navigator/status result)
+        users (-> (navigator/resource result)
+                  (hal/get-resource :users))]
+
+    (expect 200 status)
+
+    (expect
+      ["Fred" "Sue" "Mary"]
+      (map #(hal/get-property % :name) users))))

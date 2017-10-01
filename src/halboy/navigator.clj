@@ -34,6 +34,12 @@
                      json->resource)]
     (->Navigator current-url options response resource)))
 
+(defn- resource->Navigator
+  [resource options]
+  (let [current-url (hal/get-href resource :self)
+        response {:status nil}]
+    (->Navigator current-url options response resource)))
+
 (defn- fetch-url [url params options]
   (let [combined-options (merge default-options options)]
     (-> (GET url {:query-params (stringify-keys params)
@@ -114,6 +120,13 @@
    (discover href {}))
   ([href options]
    (fetch-url href {} options)))
+
+(defn resume
+  "Resumes a conversation with an API."
+  ([resource]
+    (resume resource {}))
+  ([resource options]
+    (resource->Navigator resource options)))
 
 (defn get
   "Fetches the contents of a link in an API."
