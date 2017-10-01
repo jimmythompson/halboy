@@ -3,7 +3,7 @@
   (:require [expectations :refer :all]
             [clojure.string :refer [capitalize]]
             [halboy.navigator :as navigator]
-            [halboy.resource :as resource]
+            [halboy.resource :as hal]
             [halboy.json :as json]
             [halboy.support.api
              :refer [on-discover
@@ -14,7 +14,8 @@
                      on-put-redirect
                      on-delete
                      on-delete-with-headers
-                     on-post-with-headers]])
+                     on-post-with-headers]]
+            [halboy.resource :as hal])
   (:import (java.net URL)))
 
 (def base-url "https://service.example.com")
@@ -24,9 +25,9 @@
       (.toString)))
 
 (defn- create-user [name]
-  (-> (resource/new-resource)
-      (resource/add-link :self {:href (create-url base-url (format "/users/%s" name))})
-      (resource/add-property :name (capitalize name))))
+  (-> (hal/new-resource)
+      (hal/add-link :self {:href (create-url base-url (format "/users/%s" name))})
+      (hal/add-property :name (capitalize name))))
 
 ; should be able to navigate through links in an API
 (with-fake-http
@@ -38,9 +39,9 @@
     (on-get
       (create-url base-url "/users")
       {:status 200
-       :body   (-> (resource/new-resource)
-                   (resource/add-link :self {:href "/users"})
-                   (resource/add-resources
+       :body   (-> (hal/new-resource)
+                   (hal/add-link :self {:href "/users"})
+                   (hal/add-resources
                      :users (create-user "fred")
                      :users (create-user "sue")
                      :users (create-user "mary"))
@@ -49,13 +50,13 @@
                    (navigator/get :users))
         status (navigator/status result)
         users (-> (navigator/resource result)
-                  (resource/get-resource :users))]
+                  (hal/get-resource :users))]
 
     (expect 200 status)
 
     (expect
       ["Fred" "Sue" "Mary"]
-      (map #(resource/get-property % :name) users))))
+      (map #(hal/get-property % :name) users))))
 
 ; should throw an error when trying to get a link which does not exist
 (with-fake-http
@@ -75,9 +76,9 @@
     (on-get
       (create-url base-url "/users") {:admin true}
       {:status 200
-       :body   (-> (resource/new-resource)
-                   (resource/add-link :self {:href "/users"})
-                   (resource/add-resources
+       :body   (-> (hal/new-resource)
+                   (hal/add-link :self {:href "/users"})
+                   (hal/add-resources
                      :users (create-user "fred")
                      :users (create-user "sue")
                      :users (create-user "mary"))
@@ -86,13 +87,13 @@
                    (navigator/get :users {:admin true}))
         status (navigator/status result)
         users (-> (navigator/resource result)
-                  (resource/get-resource :users))]
+                  (hal/get-resource :users))]
 
     (expect 200 status)
 
     (expect
       ["Fred" "Sue" "Mary"]
-      (map #(resource/get-property % :name) users))))
+      (map #(hal/get-property % :name) users))))
 
 ; should be able to navigate with a mixture of template and query params
 (with-fake-http
@@ -104,9 +105,9 @@
     (on-get
       (create-url base-url "/users/thomas/friends") {:mutual true}
       {:status 200
-       :body   (-> (resource/new-resource)
-                   (resource/add-link :self {:href "/users/thomas/friends"})
-                   (resource/add-resources
+       :body   (-> (hal/new-resource)
+                   (hal/add-link :self {:href "/users/thomas/friends"})
+                   (hal/add-resources
                      :users (create-user "fred")
                      :users (create-user "sue")
                      :users (create-user "mary"))
@@ -115,13 +116,13 @@
                    (navigator/get :friends {:id "thomas" :mutual true}))
         status (navigator/status result)
         users (-> (navigator/resource result)
-                  (resource/get-resource :users))]
+                  (hal/get-resource :users))]
 
     (expect 200 status)
 
     (expect
       ["Fred" "Sue" "Mary"]
-      (map #(resource/get-property % :name) users))))
+      (map #(hal/get-property % :name) users))))
 
 ; should be able to create resources in an API
 (with-fake-http
@@ -136,9 +137,9 @@
     (on-get
       (create-url base-url "/users/thomas")
       {:status 200
-       :body   (-> (resource/new-resource)
-                   (resource/add-link :self "/users/thomas")
-                   (resource/add-property :name "Thomas")
+       :body   (-> (hal/new-resource)
+                   (hal/add-link :self "/users/thomas")
+                   (hal/add-property :name "Thomas")
                    (json/resource->json))}))
   (let [result (-> (navigator/discover base-url)
                    (navigator/post :users {:name "Thomas"}))
@@ -146,7 +147,7 @@
         new-user (navigator/resource result)]
 
     (expect 200 status)
-    (expect "Thomas" (resource/get-property new-user :name))))
+    (expect "Thomas" (hal/get-property new-user :name))))
 
 ; should be able to remove resources in an API
 (with-fake-http
@@ -177,9 +178,9 @@
     (on-get
       (create-url base-url "/users/thomas/items/1")
       {:status 200
-       :body   (-> (resource/new-resource)
-                   (resource/add-link :self "/users/thomas/items/1")
-                   (resource/add-property :name "Sponge")
+       :body   (-> (hal/new-resource)
+                   (hal/add-link :self "/users/thomas/items/1")
+                   (hal/add-property :name "Sponge")
                    (json/resource->json))}))
   (let [result (-> (navigator/discover base-url)
                    (navigator/post :useritems {:id "thomas"} {:name "Sponge"}))
@@ -187,7 +188,7 @@
         new-item (navigator/resource result)]
 
     (expect 200 status)
-    (expect "Sponge" (resource/get-property new-item :name))))
+    (expect "Sponge" (hal/get-property new-item :name))))
 
 ; should not follow location headers when the status is not 201
 (with-fake-http
@@ -239,9 +240,9 @@
     (on-get
       (create-url base-url "/users/thomas")
       {:status 200
-       :body   (-> (resource/new-resource)
-                   (resource/add-link :self "/users/thomas")
-                   (resource/add-property :name "Thomas")
+       :body   (-> (hal/new-resource)
+                   (hal/add-link :self "/users/thomas")
+                   (hal/add-property :name "Thomas")
                    (json/resource->json))}))
   (let [result (-> (navigator/discover base-url {:follow-redirects false})
                    (navigator/post :users {:name "Thomas"})
@@ -250,7 +251,7 @@
         new-user (navigator/resource result)]
 
     (expect 200 status)
-    (expect "Thomas" (resource/get-property new-user :name))))
+    (expect "Thomas" (hal/get-property new-user :name))))
 
 ; should be able to put to a resource
 (with-fake-http
@@ -263,9 +264,9 @@
       (create-url base-url "/users/thomas")
       {:name "Thomas"}
       {:status 200
-       :body   (-> (resource/new-resource)
-                   (resource/add-link :self "/users/thomas")
-                   (resource/add-property :name "Thomas")
+       :body   (-> (hal/new-resource)
+                   (hal/add-link :self "/users/thomas")
+                   (hal/add-property :name "Thomas")
                    (json/resource->json))}))
   (let [result (-> (navigator/discover base-url)
                    (navigator/put :user {:id "thomas"} {:name "Thomas"}))
@@ -273,7 +274,7 @@
         user (navigator/resource result)]
 
     (expect 200 status)
-    (expect "Thomas" (resource/get-property user :name))))
+    (expect "Thomas" (hal/get-property user :name))))
 
 ; should follow redirects when putting to a resource returns a 201
 (with-fake-http
@@ -289,9 +290,9 @@
     (on-get
       (create-url base-url "/users/thomas")
       {:status 200
-       :body   (-> (resource/new-resource)
-                   (resource/add-link :self "/users/thomas")
-                   (resource/add-property :name "Thomas")
+       :body   (-> (hal/new-resource)
+                   (hal/add-link :self "/users/thomas")
+                   (hal/add-property :name "Thomas")
                    (json/resource->json))}))
   (let [result (-> (navigator/discover base-url)
                    (navigator/put :user {:id "thomas"} {:name "Thomas"}))
@@ -299,7 +300,7 @@
         user (navigator/resource result)]
 
     (expect 200 status)
-    (expect "Thomas" (resource/get-property user :name))))
+    (expect "Thomas" (hal/get-property user :name))))
 
 ; should be able to set header for delete
 (let [resource-url (create-url base-url "/users/thomas")]
@@ -343,4 +344,3 @@
           new-user (navigator/resource result)]
 
       (expect 201 status))))
-
