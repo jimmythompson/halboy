@@ -57,6 +57,14 @@
       ["Fred" "Sue" "Mary"]
       (map #(resource/get-property % :name) users))))
 
+; should throw an error when trying to get a link which does not exist
+(with-fake-http
+  (on-discover base-url)
+  (expect
+    clojure.lang.ExceptionInfo
+    (-> (navigator/discover base-url)
+        (navigator/get :users))))
+
 ; should be able to navigate through links with query params
 (with-fake-http
   (concat
@@ -303,8 +311,8 @@
                :templated true})
       (on-delete-with-headers
         resource-url
-        {"Content-Type" "application/json"
-         "Accept"       "application/hal+json"
+        {"Content-Type"        "application/json"
+         "Accept"              "application/hal+json"
          "X-resource-location" resource-url}
         {:status 204}))
     (let [result (->
@@ -323,14 +331,14 @@
         :users {:href "/users"})
       (on-post-with-headers
         (create-url base-url "/users")
-        {"Content-Type" "application/json"
-         "Accept"       "application/hal+json"
+        {"Content-Type"        "application/json"
+         "Accept"              "application/hal+json"
          "X-resource-location" resource-url}
         {:name "Thomas"}
         {:status 201}))
     (let [result (-> (navigator/discover base-url {:follow-redirects false})
-                   (navigator/set-header "X-resource-location" resource-url)
-                   (navigator/post :users {:name "Thomas"}))
+                     (navigator/set-header "X-resource-location" resource-url)
+                     (navigator/post :users {:name "Thomas"}))
           status (navigator/status result)
           new-user (navigator/resource result)]
 

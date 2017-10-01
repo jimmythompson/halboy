@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [get])
   (:require [clojure.walk :refer [keywordize-keys stringify-keys]]
             [cheshire.core :as json]
-            [halboy.resource :as resource]
+            [halboy.resource :as hal]
             [halboy.data :refer [transform-values]]
             [halboy.json :refer [json->resource resource->json]]
             [halboy.http :refer [GET POST PUT DELETE]]
@@ -37,12 +37,12 @@
 (defn- fetch-url [url params options]
   (let [combined-options (merge default-options options)]
     (-> (GET url {:query-params (stringify-keys params)
-                  :headers (get-in options [:headers] {})})
+                  :headers      (get-in options [:headers] {})})
         (response->Navigator combined-options))))
 
 (defn- post-url [url body params options]
   (let [combined-options (merge default-options options)
-        post-response (-> (POST url {:body (json/generate-string body)
+        post-response (-> (POST url {:body    (json/generate-string body)
                                      :headers (get-in options [:headers] {})})
                           (response->Navigator options))
         status (get-in post-response [:response :status])]
@@ -54,7 +54,7 @@
 
 (defn- put-url [url body params options]
   (let [combined-options (merge default-options options)
-        put-response (-> (PUT url {:body (json/generate-string body)
+        put-response (-> (PUT url {:body    (json/generate-string body)
                                    :headers (get-in options [:headers] {})})
                          (response->Navigator options))
         status (get-in put-response [:response :status])]
@@ -73,9 +73,14 @@
   (resolve-url (:href navigator) href))
 
 (defn- resolve-link [navigator link params]
-  (-> (:resource navigator)
-      (resource/get-href link)
-      (params/build-query params)))
+  (let [resource (:resource navigator)
+        href (hal/get-href resource link)]
+    (if (nil? href)
+      (throw (ex-info
+               "Attempting to follow a link which does not exist"
+               {:missing-rel    link
+                :available-rels (hal/get-links resource)}))
+      (params/build-query href params))))
 
 (defn location
   "Gets the current location of the navigator"

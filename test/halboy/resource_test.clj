@@ -32,6 +32,12 @@
         :ea:admin {:href "/admins/5" :title "Kate"})
       (get-link :ea:admin)))
 
+; should return nil when getting a link which does not exist
+(expect
+  nil
+  (-> (new-resource)
+      (get-link :random)))
+
 ; should be able to add links using add-href
 (expect
   {:href "/orders"}
@@ -48,6 +54,12 @@
         :ea:admin "/admins/2"
         :ea:admin "/admins/5")
       (get-link :ea:admin)))
+
+; should return nil when getting a href which does not exist
+(expect
+  nil
+  (-> (new-resource)
+      (get-href :random)))
 
 ; add-resource adds an embedded resource
 (expect

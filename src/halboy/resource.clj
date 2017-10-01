@@ -17,6 +17,11 @@
   ([self-link]
    (->Resource {:self self-link} {} {})))
 
+(defn get-links
+  "Gets a map of all the links in the resource"
+  [resource]
+  (:links resource))
+
 (defn get-link
   "Gets a link from a resource"
   [resource key]
