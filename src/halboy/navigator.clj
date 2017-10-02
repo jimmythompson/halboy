@@ -100,7 +100,9 @@
       (throw (ex-info
                "Attempting to follow a link which does not exist"
                {:missing-rel    link
-                :available-rels (hal/get-links resource)}))
+                :available-rels (hal/get-links resource)
+                :resource       resource
+                :response       (:response navigator)}))
       (params/build-query href params))))
 
 (defn location
@@ -142,9 +144,9 @@
   can pass an absolute url in the :resume-from key in the options
   parameter."
   ([resource]
-    (resume resource {}))
+   (resume resource {}))
   ([resource options]
-    (resource->Navigator resource options)))
+   (resource->Navigator resource options)))
 
 (defn get
   "Fetches the contents of a link in an API."
