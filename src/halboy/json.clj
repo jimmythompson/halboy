@@ -3,7 +3,8 @@
     [clojure.walk :refer [keywordize-keys]]
     [halboy.data :refer [transform-values]]
     [halboy.resource :as hal]
-    [cheshire.core :as json]))
+    [cheshire.core :as json])
+  (:import (com.fasterxml.jackson.core JsonParseException)))
 
 (declare map->resource resource->map)
 
@@ -52,9 +53,14 @@
 (defn json->resource
   "Parses a HAL+JSON string into a resource"
   [s]
-  (-> (json/parse-string s)
-      keywordize-keys
-      map->resource))
+  (try
+    (-> (json/parse-string s)
+        keywordize-keys
+        map->resource)
+    (catch JsonParseException e
+      (ex-info "Failed to parse json"
+               {:exception e
+                :string    s}))))
 
 (defn resource->map
   "Transforms a resource into a map representing a HAL+JSON

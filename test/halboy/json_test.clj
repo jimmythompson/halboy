@@ -143,3 +143,9 @@
         (haljson/resource->map))
     {:_embedded {:ea:order {:_links {:self {:href "/orders/123"}}
                             :_embedded {:customer {:_links {:self {:href "/customers/1"}}}}}}}))
+
+; json->resource should throw an exception when the string is not valid json
+(expect
+  clojure.lang.ExceptionInfo
+  (haljson/json->resource
+    "Not valid JSON!"))
