@@ -85,9 +85,10 @@
           (fetch-url {} options))
       put-response)))
 
-(defn- delete-url [url options]
+(defn- delete-url [url params options]
   (let [combined-options (deep-merge default-options options)]
-    (-> (DELETE url options)
+    (-> (DELETE url {:query-params (stringify-keys params)
+                     :headers      (get-in options [:headers] {})})
         (response->Navigator options))))
 
 (defn- resolve-absolute-href [navigator href]
@@ -184,8 +185,9 @@
    (delete navigator link {}))
   ([navigator link params]
    (let [resolved-link (resolve-link navigator link params)
-         href (resolve-absolute-href navigator (:href resolved-link))]
-     (delete-url href (:options navigator)))))
+         href (resolve-absolute-href navigator (:href resolved-link))
+         query-params (:query-params resolved-link)]
+     (delete-url href query-params (:options navigator)))))
 
 (defn follow-redirect
   "Fetches the url of the location header"

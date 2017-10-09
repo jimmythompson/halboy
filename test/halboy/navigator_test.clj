@@ -164,6 +164,21 @@
         status (navigator/status result)]
     (expect 204 status)))
 
+;should handle query params on delete
+(with-fake-http
+  (concat
+    (on-discover
+      base-url
+      :users {:href      "/users{?name}"
+              :templated true})
+    (on-delete
+      (create-url base-url "/users") {:name "thomas"}
+      {:status 204}))
+  (let [result (-> (navigator/discover base-url)
+                   (navigator/delete :users {:name "thomas"}))
+        status (navigator/status result)]
+    (expect 204 status)))
+
 ; should be able to use template params when creating resources
 (with-fake-http
   (concat

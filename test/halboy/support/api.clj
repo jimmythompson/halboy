@@ -5,7 +5,7 @@
             [halboy.json :refer [resource->json]]))
 
 (defn- redirect-to [location]
-  {:status 201
+  {:status  201
    :headers {:location location}})
 
 (defn on-discover [url & kvs]
@@ -37,15 +37,15 @@
 
 (defn on-post-with-headers
   ([url headers response]
-   [{:method :post
-     :url url
+   [{:method  :post
+     :url     url
      :headers headers}
     response])
   ([url headers body response]
-   [{:method :post
-     :url    url
+   [{:method  :post
+     :url     url
      :headers headers
-     :body   (json/generate-string body)}
+     :body    (json/generate-string body)}
     response]))
 
 (defn on-post-redirect
@@ -73,12 +73,17 @@
 (defn on-delete
   ([url response]
    [{:method :delete :url url}
+    response])
+  ([url params response]
+   [{:method       :delete
+     :url          url
+     :query-params (stringify-keys params)}
     response]))
 
 (defn on-delete-with-headers
   [url headers response]
-  [{:method :delete
-    :url url
+  [{:method  :delete
+    :url     url
     :headers headers}
    response])
 
