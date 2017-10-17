@@ -19,6 +19,10 @@
   ([url] (PUT url {}))
   ([url options] @(http/put url (deep-merge default-http-options options))))
 
+(defn PATCH
+  ([url] (PATCH url {}))
+  ([url options] @(http/patch url (deep-merge default-http-options options))))
+
 (defn DELETE
   ([url] (DELETE url {}))
   ([url options] @(http/delete url (deep-merge default-http-options options))))

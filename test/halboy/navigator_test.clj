@@ -10,6 +10,7 @@
                      on-get
                      on-post
                      on-post-redirect
+                     on-patch-redirect
                      on-put
                      on-put-redirect
                      on-delete
@@ -163,6 +164,34 @@
                    (navigator/delete :user {:id "thomas"}))
         status (navigator/status result)]
     (expect 204 status)))
+
+; should be able to update resources in an API
+(with-fake-http
+  (concat
+    (on-discover
+      base-url
+      :user   {:href      "/users/{id}"
+               :templated  true})
+    (on-patch-redirect
+      (create-url base-url "/users/thomas")
+      {:surname "Svensson"}
+      "/users/thomas")
+    (on-get
+      (create-url base-url "/users/thomas")
+      {:status 200
+       :body   (-> (hal/new-resource)
+                 (hal/add-link :self "/users/thomas")
+                 (hal/add-property :name "Thomas")
+                 (hal/add-property :surname "Svensson")
+                 (json/resource->json))}))
+  (let [result (-> (navigator/discover base-url)
+                 (navigator/patch :user {:id "thomas"} {:surname "Svensson"}))
+        status (navigator/status result)
+        new-user (navigator/resource result)]
+
+    (expect 200 status)
+    (expect "Thomas" (hal/get-property new-user :name))
+    (expect "Svensson" (hal/get-property new-user :surname))))
 
 ;should handle query params on delete
 (with-fake-http
