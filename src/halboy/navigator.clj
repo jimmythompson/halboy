@@ -5,7 +5,7 @@
             [halboy.resource :as hal]
             [halboy.data :refer [transform-values]]
             [halboy.json :refer [json->resource resource->json]]
-            [halboy.http :refer [GET POST PUT DELETE]]
+            [halboy.http :refer [GET POST PUT PATCH DELETE]]
             [halboy.params :as params]
             [halboy.argutils :refer [deep-merge]])
   (:import (java.net URL URI)))
@@ -84,6 +84,18 @@
       (-> (extract-redirect-location put-response)
           (fetch-url {} options))
       put-response)))
+
+(defn- patch-url [url body params options]
+  (let [combined-options (merge default-options options)
+        patch-response (-> (PATCH url {:body    (json/generate-string body)
+                                   :headers (get-in options [:headers] {})})
+                       (response->Navigator options))
+        status (get-in patch-response [:response :status])]
+    (if (-> (= status 201)
+          (and (:follow-redirects combined-options)))
+      (-> (extract-redirect-location patch-response)
+        (fetch-url {} options))
+      patch-response)))
 
 (defn- delete-url [url params options]
   (let [combined-options (deep-merge default-options options)]
@@ -178,6 +190,16 @@
          href (resolve-absolute-href navigator (:href resolved-link))
          query-params (:query-params resolved-link)]
      (put-url href body query-params (:options navigator)))))
+
+(defn patch
+  "Patch content to a link in an API."
+  ([navigator link body]
+   (patch navigator link {} body))
+  ([navigator link params body]
+   (let [resolved-link (resolve-link navigator link params)
+         href (resolve-absolute-href navigator (:href resolved-link))
+         query-params (:query-params resolved-link)]
+     (patch-url href body query-params (:options navigator)))))
 
 (defn delete
   "Delete content of a link in an API."

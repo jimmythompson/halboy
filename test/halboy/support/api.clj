@@ -70,6 +70,22 @@
   ([url body location]
    (on-put url body (redirect-to location))))
 
+(defn on-patch
+  ([url response]
+   [{:method :patch :url url}
+    response])
+  ([url body response]
+   [{:method :patch
+     :url    url
+     :body   (json/generate-string body)}
+    response]))
+
+(defn on-patch-redirect
+  ([url location]
+   (on-patch url (redirect-to location)))
+  ([url body location]
+   (on-patch url body (redirect-to location))))
+
 (defn on-delete
   ([url response]
    [{:method :delete :url url}
