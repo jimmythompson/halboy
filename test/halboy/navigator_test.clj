@@ -439,14 +439,14 @@
       (is (= ["Fred" "Sue" "Mary"]
              (map #(hal/get-property % :name) users))))))
 
-(testing (str "should throw an error when trying to resume a conversation "
-              "with a resource that lacks a self link")
+(testing "should throw an error when trying to resume a conversation
+          with a resource that lacks a self link"
   (is (thrown? clojure.lang.ExceptionInfo
                (navigator/resume
                  (hal/new-resource)))))
 
-(testing (str "should throw an error when trying to resume a conversation "
-              "with a resource with a relative self link, and no :resume-from option")
+(testing "should throw an error when trying to resume a conversation
+          with a resource with a relative self link, and no :resume-from option"
   (is (thrown? clojure.lang.ExceptionInfo
                (navigator/resume
                  (-> (hal/new-resource)
