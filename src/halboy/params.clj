@@ -1,5 +1,4 @@
-(ns halboy.params
-  (:require [expectations :refer :all]))
+(ns halboy.params)
 
 (def template-param-pattern #"\{([\w-_]+)\}")
 (def param-pattern #"\{(\??[\w-_]+)\}")

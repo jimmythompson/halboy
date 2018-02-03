@@ -58,9 +58,9 @@
         keywordize-keys
         map->resource)
     (catch JsonParseException e
-      (ex-info "Failed to parse json"
-               {:exception e
-                :string    s}))))
+      (throw (ex-info "Failed to parse json"
+                      {:exception e
+                       :string    s})))))
 
 (defn resource->map
   "Transforms a resource into a map representing a HAL+JSON
