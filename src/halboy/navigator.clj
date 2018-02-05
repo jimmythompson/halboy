@@ -103,7 +103,7 @@
       (throw (ex-info
                "Attempting to follow a link which does not exist"
                {:missing-rel    link
-                :available-rels (hal/get-links resource)
+                :available-rels (hal/links resource)
                 :resource       resource
                 :response       (:response navigator)}))
       (params/build-query href params))))
