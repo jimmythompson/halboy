@@ -7,22 +7,13 @@
             [halboy.json :refer [json->resource resource->json]]
             [halboy.http :refer [GET POST PUT PATCH DELETE]]
             [halboy.params :as params]
-            [halboy.argutils :refer [deep-merge]])
-  (:import (java.net URL URI)))
+            [halboy.argutils :refer [deep-merge]]
+            [halboy.url :as url]))
 
 (def default-options
   {:follow-redirects true})
 
 (defrecord Navigator [href options response resource])
-
-(defn- resolve-url [url endpoint]
-  (-> (URL. url)
-      (URL. endpoint)
-      (.toString)))
-
-(defn- absolute? [url]
-  (-> (URI. url)
-      (.isAbsolute)))
 
 (defn- extract-header [navigator header]
   (get-in navigator [:response :headers header]))
@@ -30,14 +21,14 @@
 (defn- extract-redirect-location [navigator]
   (let [base-url (:href navigator)
         endpoint (extract-header navigator :location)]
-    (resolve-url base-url endpoint)))
+    (url/resolve-url base-url endpoint)))
 
 (defn- get-resume-location [resource options]
   (let [resume-from (:resume-from options)
         self-link (hal/get-href resource :self)]
     (if resume-from
       resume-from
-      (if (and self-link (absolute? self-link))
+      (if (and self-link (url/absolute? self-link))
         self-link
         (throw
           (ex-info "No :resume-from option, and self link not absolute"
@@ -61,7 +52,7 @@
                   :headers      (get-in options [:headers] {})})
         (response->Navigator combined-options))))
 
-(defn- post-url [url body params options]
+(defn- post-url [url body _ options]
   (let [combined-options (merge default-options options)
         post-response (-> (POST url {:body    (json/generate-string body)
                                      :headers (get-in options [:headers] {})})
@@ -73,7 +64,7 @@
           (fetch-url {} options))
       post-response)))
 
-(defn- put-url [url body params options]
+(defn- put-url [url body _ options]
   (let [combined-options (merge default-options options)
         put-response (-> (PUT url {:body    (json/generate-string body)
                                    :headers (get-in options [:headers] {})})
@@ -85,26 +76,25 @@
           (fetch-url {} options))
       put-response)))
 
-(defn- patch-url [url body params options]
+(defn- patch-url [url body _ options]
   (let [combined-options (merge default-options options)
         patch-response (-> (PATCH url {:body    (json/generate-string body)
-                                   :headers (get-in options [:headers] {})})
-                       (response->Navigator options))
+                                       :headers (get-in options [:headers] {})})
+                           (response->Navigator options))
         status (get-in patch-response [:response :status])]
     (if (-> (= status 201)
-          (and (:follow-redirects combined-options)))
+            (and (:follow-redirects combined-options)))
       (-> (extract-redirect-location patch-response)
-        (fetch-url {} options))
+          (fetch-url {} options))
       patch-response)))
 
 (defn- delete-url [url params options]
-  (let [combined-options (deep-merge default-options options)]
-    (-> (DELETE url {:query-params (stringify-keys params)
-                     :headers      (get-in options [:headers] {})})
-        (response->Navigator options))))
+  (-> (DELETE url {:query-params (stringify-keys params)
+                   :headers      (get-in options [:headers] {})})
+      (response->Navigator options)))
 
 (defn- resolve-absolute-href [navigator href]
-  (resolve-url (:href navigator) href))
+  (url/resolve-url (:href navigator) href))
 
 (defn- resolve-link [navigator link params]
   (let [resource (:resource navigator)
