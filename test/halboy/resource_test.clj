@@ -33,6 +33,17 @@
     (is (nil? (-> (new-resource)
                   (get-link :random)))))
 
+  (testing "should be able to get all the links"
+    (is (= {:self {:href "/orders"}}
+           (-> (new-resource)
+               (add-link :self {:href "/orders"})
+               (links))))
+
+    (is (= {:self {:href "/orders"}}
+           (-> (new-resource)
+               (add-link :self {:href "/orders"})
+               (get-links)))))
+
   (testing "should be able to add links using add-href"
     (is (= {:href "/orders"}
            (-> (new-resource)
