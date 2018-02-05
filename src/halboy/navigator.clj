@@ -51,6 +51,21 @@
         response {:status nil}]
     (->Navigator current-url options response resource)))
 
+(defn- resolve-absolute-href [navigator href]
+  (url/resolve-url (:href navigator) href))
+
+(defn- resolve-link [navigator link params]
+  (let [resource (:resource navigator)
+        href (hal/get-href resource link)]
+    (if (nil? href)
+      (throw (ex-info
+               "Attempting to follow a link which does not exist"
+               {:missing-rel    link
+                :available-rels (hal/links resource)
+                :resource       resource
+                :response       (:response navigator)}))
+      (params/build-query href params))))
+
 (defn http-method->fn [method]
   (get-in
     {:get    GET
@@ -79,52 +94,38 @@
              :params  params
              :options options}))
 
-(defn- post-url [url body _ options]
-  (let [combined-options (merge default-options options)
-        post-response (-> (POST url {:body    (json/generate-string body)
-                                     :headers (:headers options)})
-                          (response->Navigator options))
-        status (get-in post-response [:response :status])]
-    (if (-> (= status 201)
-            (and (:follow-redirects combined-options)))
-      (-> (extract-redirect-location post-response)
-          (get-url {} options))
-      post-response)))
-
-(defn- put-url [url body _ options]
+(defn- write-url [{:keys [method url body params options]}]
   (let [options (merge default-options options)
-        result (-> (PUT url {:body    (json/generate-string body)
-                             :headers (:headers options)})
+        http-fn (http-method->fn method)
+        result (-> (http-fn url {:query-params (stringify-keys params)
+                                 :body         (json/generate-string body)
+                                 :headers      (:headers options)})
                    (response->Navigator options))]
     (if (follow-redirect? result)
       (-> (extract-redirect-location result)
           (get-url {} options))
       result)))
 
-(defn- patch-url [url body _ options]
-  (let [options (merge default-options options)
-        result (-> (PATCH url {:body    (json/generate-string body)
-                               :headers (:headers options)})
-                   (response->Navigator options))]
-    (if (follow-redirect? result)
-      (-> (extract-redirect-location result)
-          (get-url {} options))
-      result)))
+(defn- post-url [url body params options]
+  (write-url {:method  :post
+              :url     url
+              :body    body
+              :params  params
+              :options options}))
 
-(defn- resolve-absolute-href [navigator href]
-  (url/resolve-url (:href navigator) href))
+(defn- put-url [url body params options]
+  (write-url {:method  :put
+              :url     url
+              :body    body
+              :params  params
+              :options options}))
 
-(defn- resolve-link [navigator link params]
-  (let [resource (:resource navigator)
-        href (hal/get-href resource link)]
-    (if (nil? href)
-      (throw (ex-info
-               "Attempting to follow a link which does not exist"
-               {:missing-rel    link
-                :available-rels (hal/links resource)
-                :resource       resource
-                :response       (:response navigator)}))
-      (params/build-query href params))))
+(defn- patch-url [url body params options]
+  (write-url {:method  :patch
+              :url     url
+              :body    body
+              :params  params
+              :options options}))
 
 (defn location
   "Gets the current location of the navigator"
