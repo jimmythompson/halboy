@@ -300,6 +300,25 @@
                                       :status   "processing"})))
                (get-resource :ea:order)))))
 
+  (testing "should be able to get all the embedded resources"
+    (is (= {:ea:order (-> (new-resource)
+                          (add-links {:self        {:href "/orders/123"}
+                                      :ea:basket   {:href "/baskets/98712"}
+                                      :ea:customer {:href "/customers/7809"}})
+                          (add-properties {:total    30.0
+                                           :currency "USD"
+                                           :status   "shipped"}))}
+           (-> (new-resource)
+               (add-resources
+                 {:ea:order (-> (new-resource)
+                                (add-links {:self        {:href "/orders/123"}
+                                            :ea:basket   {:href "/baskets/98712"}
+                                            :ea:customer {:href "/customers/7809"}})
+                                (add-properties {:total    30.0
+                                                 :currency "USD"
+                                                 :status   "shipped"}))})
+               (resources)))))
+
   (testing "should be able to add and retrieve properties from the resource"
     (is (= 14
            (-> (new-resource)

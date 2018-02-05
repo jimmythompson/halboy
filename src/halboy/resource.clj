@@ -40,6 +40,11 @@
   (-> (get-link resource key)
       :href))
 
+(defn resources
+  "Gets all the embedded resources as a map"
+  [resource]
+  (:embedded resource))
+
 (defn get-resource
   "Gets an embedded resource from a resource"
   [resource key]
