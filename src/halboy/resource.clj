@@ -1,7 +1,5 @@
 (ns halboy.resource
-  (:require [clojure.string :as str]
-            [halboy.params :as params]
-            [halboy.argutils :refer [apply-pairs-or-map]]))
+  (:require [halboy.argutils :refer [apply-pairs-or-map]]))
 
 (defn- create-or-append [l r]
   (if (not (nil? l))
