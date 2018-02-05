@@ -51,11 +51,33 @@
         response {:status nil}]
     (->Navigator current-url options response resource)))
 
-(defn- fetch-url [url params options]
-  (let [combined-options (merge default-options options)]
-    (-> (GET url {:query-params (stringify-keys params)
-                  :headers      (:headers options)})
-        (response->Navigator combined-options))))
+(defn http-method->fn [method]
+  (get-in
+    {:get    GET
+     :post   POST
+     :put    PUT
+     :patch  PATCH
+     :delete DELETE}
+    [method]))
+
+(defn- read-url [{:keys [method url params options]}]
+  (let [options (merge default-options options)
+        http-fn (http-method->fn method)]
+    (-> (http-fn url {:query-params (stringify-keys params)
+                      :headers      (:headers options)})
+        (response->Navigator options))))
+
+(defn- get-url [url params options]
+  (read-url {:method  :get
+             :url     url
+             :params  params
+             :options options}))
+
+(defn- delete-url [url params options]
+  (read-url {:method  :delete
+             :url     url
+             :params  params
+             :options options}))
 
 (defn- post-url [url body _ options]
   (let [combined-options (merge default-options options)
@@ -66,7 +88,7 @@
     (if (-> (= status 201)
             (and (:follow-redirects combined-options)))
       (-> (extract-redirect-location post-response)
-          (fetch-url {} options))
+          (get-url {} options))
       post-response)))
 
 (defn- put-url [url body _ options]
@@ -76,7 +98,7 @@
                    (response->Navigator options))]
     (if (follow-redirect? result)
       (-> (extract-redirect-location result)
-          (fetch-url {} options))
+          (get-url {} options))
       result)))
 
 (defn- patch-url [url body _ options]
@@ -86,13 +108,8 @@
                    (response->Navigator options))]
     (if (follow-redirect? result)
       (-> (extract-redirect-location result)
-          (fetch-url {} options))
+          (get-url {} options))
       result)))
-
-(defn- delete-url [url params options]
-  (-> (DELETE url {:query-params (stringify-keys params)
-                   :headers      (:headers options)})
-      (response->Navigator options)))
 
 (defn- resolve-absolute-href [navigator href]
   (url/resolve-url (:href navigator) href))
@@ -140,7 +157,7 @@
   ([href]
    (discover href {}))
   ([href options]
-   (fetch-url href {} options)))
+   (get-url href {} options)))
 
 (defn resume
   "Resumes a conversation with an API. Your resource needs a self
@@ -160,7 +177,7 @@
    (let [resolved-link (resolve-link navigator link params)
          href (resolve-absolute-href navigator (:href resolved-link))
          query-params (:query-params resolved-link)]
-     (fetch-url href query-params (:options navigator)))))
+     (get-url href query-params (:options navigator)))))
 
 (defn post
   "Posts content to a link in an API."
@@ -206,7 +223,7 @@
   "Fetches the url of the location header"
   [navigator]
   (-> (extract-redirect-location navigator)
-      (fetch-url {} (:options navigator))))
+      (get-url {} (:options navigator))))
 
 (defn get-header
   "Retrieves a specified header from the response"
