@@ -31,6 +31,16 @@
       (hal/add-property :name (capitalize name))))
 
 (deftest halboy-navigator
+  (testing "should be able to retrieve the options"
+    (with-fake-http
+      (on-discover
+        base-url
+        :users {:href      "/users{?admin}"
+                :templated true})
+      (is (= {:follow-redirects false}
+             (-> (navigator/discover base-url {:follow-redirects false})
+                 (navigator/options))))))
+
   (testing "should be able to navigate through links in an API"
     (with-fake-http
       (concat
