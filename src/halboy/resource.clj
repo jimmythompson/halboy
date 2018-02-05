@@ -38,6 +38,11 @@
   [resource key]
   (get-in resource [:embedded key]))
 
+(defn properties
+  "Gets all the properties from a resource as a map"
+  [resource]
+  (:properties resource))
+
 (defn get-property
   "Gets an property from a resource"
   [resource key]

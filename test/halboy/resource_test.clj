@@ -311,6 +311,15 @@
       (is (= 14 (get-property resource :currently-processing)))
       (is (= 20 (get-property resource :shipped-today)))))
 
+  (testing "should be able to retrieve all the properties"
+    (let [resource (-> (new-resource)
+                       (add-properties
+                         {:currently-processing 14
+                          :shipped-today        20}))]
+      (is (= {:currently-processing 14
+              :shipped-today        20}
+             (properties resource)))))
+
   (testing "should be able to navigate deep within properties"
     (is (= 20
            (-> (new-resource)
