@@ -11,9 +11,14 @@
             [halboy.url :as url]))
 
 (def default-options
-  {:follow-redirects true})
+  {:follow-redirects true
+   :headers          {}})
 
 (defrecord Navigator [href options response resource])
+
+(defn- follow-redirect? [navigator]
+  (and (= 201 (get-in navigator [:response :status]))
+       (get-in navigator [:options :follow-redirects])))
 
 (defn- extract-header [navigator header]
   (get-in navigator [:response :headers header]))
@@ -49,13 +54,13 @@
 (defn- fetch-url [url params options]
   (let [combined-options (merge default-options options)]
     (-> (GET url {:query-params (stringify-keys params)
-                  :headers      (get-in options [:headers] {})})
+                  :headers      (:headers options)})
         (response->Navigator combined-options))))
 
 (defn- post-url [url body _ options]
   (let [combined-options (merge default-options options)
         post-response (-> (POST url {:body    (json/generate-string body)
-                                     :headers (get-in options [:headers] {})})
+                                     :headers (:headers options)})
                           (response->Navigator options))
         status (get-in post-response [:response :status])]
     (if (-> (= status 201)
@@ -65,32 +70,28 @@
       post-response)))
 
 (defn- put-url [url body _ options]
-  (let [combined-options (merge default-options options)
-        put-response (-> (PUT url {:body    (json/generate-string body)
-                                   :headers (get-in options [:headers] {})})
-                         (response->Navigator options))
-        status (get-in put-response [:response :status])]
-    (if (-> (= status 201)
-            (and (:follow-redirects combined-options)))
-      (-> (extract-redirect-location put-response)
+  (let [options (merge default-options options)
+        result (-> (PUT url {:body    (json/generate-string body)
+                             :headers (:headers options)})
+                   (response->Navigator options))]
+    (if (follow-redirect? result)
+      (-> (extract-redirect-location result)
           (fetch-url {} options))
-      put-response)))
+      result)))
 
 (defn- patch-url [url body _ options]
-  (let [combined-options (merge default-options options)
-        patch-response (-> (PATCH url {:body    (json/generate-string body)
-                                       :headers (get-in options [:headers] {})})
-                           (response->Navigator options))
-        status (get-in patch-response [:response :status])]
-    (if (-> (= status 201)
-            (and (:follow-redirects combined-options)))
-      (-> (extract-redirect-location patch-response)
+  (let [options (merge default-options options)
+        result (-> (PATCH url {:body    (json/generate-string body)
+                               :headers (:headers options)})
+                   (response->Navigator options))]
+    (if (follow-redirect? result)
+      (-> (extract-redirect-location result)
           (fetch-url {} options))
-      patch-response)))
+      result)))
 
 (defn- delete-url [url params options]
   (-> (DELETE url {:query-params (stringify-keys params)
-                   :headers      (get-in options [:headers] {})})
+                   :headers      (:headers options)})
       (response->Navigator options)))
 
 (defn- resolve-absolute-href [navigator href]

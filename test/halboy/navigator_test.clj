@@ -37,8 +37,9 @@
         base-url
         :users {:href      "/users{?admin}"
                 :templated true})
-      (is (= {:follow-redirects false}
-             (-> (navigator/discover base-url {:follow-redirects false})
+      (is (= {:follow-redirects true
+              :headers          {}}
+             (-> (navigator/discover base-url)
                  (navigator/options))))))
 
   (testing "should be able to navigate through links in an API"
