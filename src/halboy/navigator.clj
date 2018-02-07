@@ -82,17 +82,23 @@
                       :headers      (:headers options)})
         (response->Navigator options))))
 
-(defn- get-url [url params options]
-  (read-url {:method  :get
-             :url     url
-             :params  params
-             :options options}))
+(defn- get-url
+  ([url options]
+   (get-url url {} options))
+  ([url params options]
+   (read-url {:method  :get
+              :url     url
+              :params  params
+              :options options})))
 
-(defn- delete-url [url params options]
-  (read-url {:method  :delete
-             :url     url
-             :params  params
-             :options options}))
+(defn- delete-url
+  ([url options]
+   (delete-url url {} options))
+  ([url params options]
+   (read-url {:method  :delete
+              :url     url
+              :params  params
+              :options options})))
 
 (defn- write-url [{:keys [method url body params options]}]
   (let [options (merge default-options options)
@@ -103,29 +109,38 @@
                    (response->Navigator options))]
     (if (follow-redirect? result)
       (-> (extract-redirect-location result)
-          (get-url {} options))
+          (get-url options))
       result)))
 
-(defn- post-url [url body params options]
-  (write-url {:method  :post
-              :url     url
-              :body    body
-              :params  params
-              :options options}))
+(defn- post-url
+  ([url body options]
+   (post-url url body {} options))
+  ([url body params options]
+   (write-url {:method  :post
+               :url     url
+               :body    body
+               :params  params
+               :options options})))
 
-(defn- put-url [url body params options]
-  (write-url {:method  :put
-              :url     url
-              :body    body
-              :params  params
-              :options options}))
+(defn- put-url
+  ([url body options]
+    (put-url url body {} options))
+  ([url body params options]
+   (write-url {:method  :put
+               :url     url
+               :body    body
+               :params  params
+               :options options})))
 
-(defn- patch-url [url body params options]
-  (write-url {:method  :patch
-              :url     url
-              :body    body
-              :params  params
-              :options options}))
+(defn- patch-url
+  ([url body options]
+    (patch-url url body {} options))
+  ([url body params options]
+   (write-url {:method  :patch
+               :url     url
+               :body    body
+               :params  params
+               :options options})))
 
 (defn location
   "Gets the current location of the navigator"
@@ -158,7 +173,7 @@
   ([href]
    (discover href {}))
   ([href options]
-   (get-url href {} options)))
+   (get-url href options)))
 
 (defn resume
   "Resumes a conversation with an API. Your resource needs a self
@@ -224,7 +239,7 @@
   "Fetches the url of the location header"
   [navigator]
   (-> (extract-redirect-location navigator)
-      (get-url {} (:options navigator))))
+      (get-url (:options navigator))))
 
 (defn get-header
   "Retrieves a specified header from the response"
@@ -234,8 +249,6 @@
 (defn set-header
   "set header option for navigator"
   [navigator header-key header-value]
-  (let [headers (or
-                  (get-in navigator [:options :headers])
-                  {})
+  (let [headers (get-in navigator [:options :headers] {})
         updated-headers (assoc headers header-key header-value)]
     (assoc-in navigator [:options :headers] updated-headers)))
