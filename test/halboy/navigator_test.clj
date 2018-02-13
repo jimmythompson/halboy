@@ -17,7 +17,7 @@
                      on-delete-with-headers
                      on-post-with-headers]]
             [halboy.resource :as hal])
-  (:import (java.net URL)))
+  (:import [java.net URL]))
 
 (def base-url "https://service.example.com")
 (defn- create-url [base-url resource]
@@ -37,10 +37,11 @@
         base-url
         :users {:href      "/users{?admin}"
                 :templated true})
-      (is (= {:follow-redirects true
-              :headers          {}}
-             (-> (navigator/discover base-url)
-                 (navigator/options))))))
+      (let [options (-> (navigator/discover base-url)
+                        (navigator/options))]
+        (is (true? (:follow-redirects options)))
+        (is (empty? (:headers options)))
+        (is (not (nil? (:client options)))))))
 
   (testing "should be able to navigate through links in an API"
     (with-fake-http

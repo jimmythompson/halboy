@@ -1,17 +1,18 @@
 (ns halboy.navigator
   (:refer-clojure :exclude [get])
   (:require [clojure.walk :refer [keywordize-keys stringify-keys]]
-            [cheshire.core :as json]
             [halboy.resource :as hal]
             [halboy.data :refer [transform-values]]
             [halboy.json :refer [json->resource resource->json]]
-            [halboy.http :refer [GET POST PUT PATCH DELETE]]
+            [halboy.http.default :as client]
+            [halboy.http.protocol :as http]
             [halboy.params :as params]
             [halboy.argutils :refer [deep-merge]]
             [halboy.url :as url]))
 
 (def default-options
-  {:follow-redirects true
+  {:client           (client/new-http-client)
+   :follow-redirects true
    :headers          {}})
 
 (defrecord Navigator [href options response resource])
@@ -58,54 +59,51 @@
   (let [resource (:resource navigator)
         href (hal/get-href resource link)]
     (if (nil? href)
-      (throw (ex-info
-               "Attempting to follow a link which does not exist"
-               {:missing-rel    link
-                :available-rels (hal/links resource)
-                :resource       resource
-                :response       (:response navigator)}))
+      (do
+        (throw (ex-info
+                 "Attempting to follow a link which does not exist"
+                 {:missing-rel    link
+                  :available-rels (hal/links resource)
+                  :resource       resource
+                  :response       (:response navigator)})))
       (params/build-query href params))))
 
-(defn http-method->fn [method]
-  (get-in
-    {:get    GET
-     :post   POST
-     :put    PUT
-     :patch  PATCH
-     :delete DELETE}
-    [method]))
+(defn- with-custom-headers [request headers]
+  (let [headers (merge (:headers request) headers)]
+    (assoc request :headers headers)))
 
-(defn- read-url [{:keys [method url params options]}]
+(defn- read-url [request options]
   (let [options (merge default-options options)
-        http-fn (http-method->fn method)]
-    (-> (http-fn url {:query-params (stringify-keys params)
-                      :headers      (:headers options)})
+        request (with-custom-headers request (:headers options))
+        client (:client options)]
+    (-> (http/exchange client request)
         (response->Navigator options))))
 
 (defn- get-url
   ([url options]
    (get-url url {} options))
   ([url params options]
-   (read-url {:method  :get
-              :url     url
-              :params  params
-              :options options})))
+   (read-url
+     {:method       :get
+      :url          url
+      :query-params params}
+     options)))
 
 (defn- delete-url
   ([url options]
    (delete-url url {} options))
   ([url params options]
-   (read-url {:method  :delete
-              :url     url
-              :params  params
-              :options options})))
+   (read-url
+     {:method       :delete
+      :url          url
+      :query-params params}
+     options)))
 
-(defn- write-url [{:keys [method url body params options]}]
+(defn- write-url [request options]
   (let [options (merge default-options options)
-        http-fn (http-method->fn method)
-        result (-> (http-fn url {:query-params (stringify-keys params)
-                                 :body         (json/generate-string body)
-                                 :headers      (:headers options)})
+        request (with-custom-headers request (:headers options))
+        client (:client options)
+        result (-> (http/exchange client request)
                    (response->Navigator options))]
     (if (follow-redirect? result)
       (-> (extract-redirect-location result)
@@ -116,31 +114,34 @@
   ([url body options]
    (post-url url body {} options))
   ([url body params options]
-   (write-url {:method  :post
-               :url     url
-               :body    body
-               :params  params
-               :options options})))
+   (write-url
+     {:method       :post
+      :url          url
+      :body         body
+      :query-params params}
+     options)))
 
 (defn- put-url
   ([url body options]
-    (put-url url body {} options))
+   (put-url url body {} options))
   ([url body params options]
-   (write-url {:method  :put
-               :url     url
-               :body    body
-               :params  params
-               :options options})))
+   (write-url
+     {:method       :put
+      :url          url
+      :body         body
+      :query-params params}
+     options)))
 
 (defn- patch-url
   ([url body options]
-    (patch-url url body {} options))
+   (patch-url url body {} options))
   ([url body params options]
-   (write-url {:method  :patch
-               :url     url
-               :body    body
-               :params  params
-               :options options})))
+   (write-url
+     {:method       :patch
+      :url          url
+      :body         body
+      :query-params params}
+     options)))
 
 (defn location
   "Gets the current location of the navigator"
