@@ -3,7 +3,7 @@
   (:require [clojure.walk :refer [keywordize-keys stringify-keys]]
             [halboy.resource :as hal]
             [halboy.data :refer [transform-values]]
-            [halboy.json :refer [json->resource resource->json]]
+            [halboy.json :as haljson]
             [halboy.http.default :as client]
             [halboy.http.protocol :as http]
             [halboy.params :as params]
@@ -43,7 +43,7 @@
 (defn- response->Navigator [response options]
   (let [current-url (get-in response [:opts :url])
         resource (-> (:body response)
-                     json->resource)]
+                     haljson/map->resource)]
     (->Navigator current-url options response resource)))
 
 (defn- resource->Navigator
@@ -59,13 +59,12 @@
   (let [resource (:resource navigator)
         href (hal/get-href resource link)]
     (if (nil? href)
-      (do
-        (throw (ex-info
-                 "Attempting to follow a link which does not exist"
-                 {:missing-rel    link
-                  :available-rels (hal/links resource)
-                  :resource       resource
-                  :response       (:response navigator)})))
+      (throw (ex-info
+               "Attempting to follow a link which does not exist"
+               {:missing-rel    link
+                :available-rels (hal/links resource)
+                :resource       resource
+                :response       (:response navigator)}))
       (params/build-query href params))))
 
 (defn- with-custom-headers [request headers]

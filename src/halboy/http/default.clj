@@ -1,6 +1,6 @@
 (ns halboy.http.default
   (:require
-    [clojure.walk :refer [stringify-keys]]
+    [clojure.walk :refer [stringify-keys keywordize-keys]]
     [cheshire.core :as json]
     [org.httpkit.client :as http]
     [halboy.argutils :refer [deep-merge]]
@@ -31,6 +31,12 @@
 (defn- with-json-body [m]
   (update-if-present m [:body] json/generate-string))
 
+(defn- parse-json-response [response]
+  (update-if-present
+    response [:body]
+    #(-> (json/parse-string %)
+         (keywordize-keys))))
+
 (defn- with-transformed-params [m]
   (update-if-present m [:query-params] stringify-keys))
 
@@ -42,7 +48,8 @@
                       (with-transformed-params)
                       (with-json-body))
           http-fn (http-method->fn method)]
-      @(http-fn url request))))
+      (-> @(http-fn url request)
+          (parse-json-response)))))
 
 (defn new-http-client []
   (DefaultHttpClient.))
