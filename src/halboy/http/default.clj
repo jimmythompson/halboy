@@ -18,11 +18,11 @@
 
 (defn http-method->fn [method]
   (get-in
-    {:get    (fn [url request] @(http/get url request))
-     :post   (fn [url request] @(http/post url request))
-     :put    (fn [url request] @(http/put url request))
-     :patch  (fn [url request] @(http/patch url request))
-     :delete (fn [url request] @(http/delete url request))}
+    {:get    http/get
+     :post   http/post
+     :put    http/put
+     :patch  http/patch
+     :delete http/delete}
     [method]))
 
 (defn- with-default-options [m]
@@ -42,7 +42,7 @@
                       (with-transformed-params)
                       (with-json-body))
           http-fn (http-method->fn method)]
-      (http-fn url request))))
+      @(http-fn url request))))
 
 (defn new-http-client []
   (DefaultHttpClient.))
