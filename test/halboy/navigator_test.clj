@@ -5,17 +5,7 @@
             [halboy.navigator :as navigator]
             [halboy.resource :as hal]
             [halboy.json :as json]
-            [halboy.support.api
-             :refer [on-discover
-                     on-get
-                     on-post
-                     on-post-redirect
-                     on-patch-redirect
-                     on-put
-                     on-put-redirect
-                     on-delete
-                     on-delete-with-headers
-                     on-post-with-headers]]
+            [halboy.support.api :as stubs]
             [halboy.resource :as hal])
   (:import [java.net URL]))
 
@@ -33,7 +23,7 @@
 (deftest halboy-navigator
   (testing "[DEPRECATED] should be able to retrieve the settings through options"
     (with-fake-http
-      (on-discover
+      (stubs/on-discover
         base-url
         :users {:href      "/users{?admin}"
                 :templated true})
@@ -45,7 +35,7 @@
 
   (testing "should be able to retrieve the settings"
     (with-fake-http
-      (on-discover
+      (stubs/on-discover
         base-url
         :users {:href      "/users{?admin}"
                 :templated true})
@@ -58,11 +48,11 @@
   (testing "should be able to navigate through links in an API"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :users {:href      "/users{?admin}"
                   :templated true})
-        (on-get
+        (stubs/on-get
           (create-url base-url "/users")
           {:status 200
            :body   (-> (hal/new-resource)
@@ -85,7 +75,7 @@
 
   (testing "should throw an error when trying to get a link which does not exist"
     (with-fake-http
-      (on-discover base-url)
+      (stubs/on-discover base-url)
       (is (thrown? clojure.lang.ExceptionInfo
                    (-> (navigator/discover base-url)
                        (navigator/get :users))))))
@@ -93,11 +83,11 @@
   (testing "should be able to navigate through links with query params"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :users {:href      "/users{?admin}"
                   :templated true})
-        (on-get
+        (stubs/on-get
           (create-url base-url "/users") {:admin true}
           {:status 200
            :body   (-> (hal/new-resource)
@@ -121,11 +111,11 @@
   (testing "should be able to navigate with a mixture of template and query params"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :friends {:href      "/users/{id}/friends{?mutual}"
                     :templated true})
-        (on-get
+        (stubs/on-get
           (create-url base-url "/users/thomas/friends") {:mutual true}
           {:status 200
            :body   (-> (hal/new-resource)
@@ -149,14 +139,14 @@
   (testing "should be able to create resources in an API"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :users {:href "/users"})
-        (on-post-redirect
+        (stubs/on-post-redirect
           (create-url base-url "/users")
           {:name "Thomas"}
           "/users/thomas")
-        (on-get
+        (stubs/on-get
           (create-url base-url "/users/thomas")
           {:status 200
            :body   (-> (hal/new-resource)
@@ -174,11 +164,11 @@
   (testing "should be able to remove resources in an API"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :user {:href      "/users/{id}"
                  :templated true})
-        (on-delete
+        (stubs/on-delete
           (create-url base-url "/users/thomas")
           {:status 204}))
       (let [result (-> (navigator/discover base-url)
@@ -189,15 +179,15 @@
   (testing "should be able to update resources in an API"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :user {:href      "/users/{id}"
                  :templated true})
-        (on-patch-redirect
+        (stubs/on-patch-redirect
           (create-url base-url "/users/thomas")
           {:surname "Svensson"}
           "/users/thomas")
-        (on-get
+        (stubs/on-get
           (create-url base-url "/users/thomas")
           {:status 200
            :body   (-> (hal/new-resource)
@@ -217,11 +207,11 @@
   (testing "should handle query params on delete"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :users {:href      "/users{?name}"
                   :templated true})
-        (on-delete
+        (stubs/on-delete
           (create-url base-url "/users") {:name "thomas"}
           {:status 204}))
       (let [result (-> (navigator/discover base-url)
@@ -232,15 +222,15 @@
   (testing "should be able to use template params when creating resources"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :useritems {:href      "/users/{id}/items"
                       :templated true})
-        (on-post-redirect
+        (stubs/on-post-redirect
           (create-url base-url "/users/thomas/items")
           {:name "Sponge"}
           "/users/thomas/items/1")
-        (on-get
+        (stubs/on-get
           (create-url base-url "/users/thomas/items/1")
           {:status 200
            :body   (-> (hal/new-resource)
@@ -258,11 +248,11 @@
   (testing "should not follow location headers when the status is not 201"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :users {:href      "/users{?admin}"
                   :templated true})
-        (on-post
+        (stubs/on-post
           (create-url base-url "/users")
           {:name "Thomas"}
           {:status 400}))
@@ -274,11 +264,11 @@
   (testing "should not follow location headers when the options say not to"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :users {:href      "/users{?admin}"
                   :templated true})
-        (on-post-redirect
+        (stubs/on-post-redirect
           (create-url base-url "/users")
           {:name "Thomas"}
           "/users/thomas"))
@@ -294,14 +284,14 @@
   (testing "should be able to continue the conversation even if we do not follow redirects"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :users {:href "/users"})
-        (on-post-redirect
+        (stubs/on-post-redirect
           (create-url base-url "/users")
           {:name "Thomas"}
           "/users/thomas")
-        (on-get
+        (stubs/on-get
           (create-url base-url "/users/thomas")
           {:status 200
            :body   (-> (hal/new-resource)
@@ -320,11 +310,11 @@
   (testing "should be able to put to a resource"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :user {:href      "/users/{id}"
                  :templated true})
-        (on-put
+        (stubs/on-put
           (create-url base-url "/users/thomas")
           {:name "Thomas"}
           {:status 200
@@ -343,15 +333,15 @@
   (testing "should follow redirects when putting to a resource returns a 201"
     (with-fake-http
       (concat
-        (on-discover
+        (stubs/on-discover
           base-url
           :user {:href      "/users/{id}"
                  :templated true})
-        (on-put-redirect
+        (stubs/on-put-redirect
           (create-url base-url "/users/thomas")
           {:name "Thomas"}
           "/users/thomas")
-        (on-get
+        (stubs/on-get
           (create-url base-url "/users/thomas")
           {:status 200
            :body   (-> (hal/new-resource)
@@ -370,11 +360,11 @@
     (let [resource-url (create-url base-url "/users/thomas")]
       (with-fake-http
         (concat
-          (on-discover
+          (stubs/on-discover
             base-url
             :user {:href      "/users/{id}"
                    :templated true})
-          (on-delete-with-headers
+          (stubs/on-delete-with-headers
             resource-url
             {"Content-Type"        "application/json"
              "Accept"              "application/hal+json"
@@ -391,10 +381,10 @@
     (let [resource-url (create-url base-url "/users/thomas")]
       (with-fake-http
         (concat
-          (on-discover
+          (stubs/on-discover
             base-url
             :users {:href "/users"})
-          (on-post-with-headers
+          (stubs/on-post-with-headers
             (create-url base-url "/users")
             {"Content-Type"        "application/json"
              "Accept"              "application/hal+json"
@@ -410,7 +400,7 @@
 
   (testing "should be able to resume conversations"
     (with-fake-http
-      (on-get
+      (stubs/on-get
         (create-url base-url "/users")
         {:status 200
          :body   (-> (hal/new-resource)
@@ -438,7 +428,7 @@
 
   (testing "should be able to hint at the location when the self link is not absolute"
     (with-fake-http
-      (on-get
+      (stubs/on-get
         (create-url base-url "/users")
         {:status 200
          :body   (-> (hal/new-resource)
