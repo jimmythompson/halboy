@@ -31,7 +31,7 @@
       (hal/add-property :name (capitalize name))))
 
 (deftest halboy-navigator
-  (testing "should be able to retrieve the options"
+  (testing "[DEPRECATED] should be able to retrieve the settings through options"
     (with-fake-http
       (on-discover
         base-url
@@ -39,6 +39,18 @@
                 :templated true})
       (let [options (-> (navigator/discover base-url)
                         (navigator/options))]
+        (is (true? (:follow-redirects options)))
+        (is (empty? (:headers options)))
+        (is (not (nil? (:client options)))))))
+
+  (testing "should be able to retrieve the settings"
+    (with-fake-http
+      (on-discover
+        base-url
+        :users {:href      "/users{?admin}"
+                :templated true})
+      (let [options (-> (navigator/discover base-url)
+                        (navigator/settings))]
         (is (true? (:follow-redirects options)))
         (is (empty? (:headers options)))
         (is (not (nil? (:client options)))))))

@@ -149,7 +149,14 @@
   (:href navigator))
 
 (defn options
-  "Gets the navigation options"
+  "DEPRECATED: Use 'settings' instead
+   Gets the navigation options"
+  {:deprecated "2.0.8"}
+  [navigator]
+  (:options navigator))
+
+(defn settings
+  "Gets the navigation settings"
   [navigator]
   (:options navigator))
 
