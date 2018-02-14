@@ -248,7 +248,7 @@
   (extract-header navigator header))
 
 (defn set-header
-  "set header option for navigator"
+  "Sets a header for all subsequent calls"
   [navigator header-key header-value]
   (let [headers (get-in navigator [:settings :http :headers] {})
         updated-headers (assoc headers header-key header-value)]
