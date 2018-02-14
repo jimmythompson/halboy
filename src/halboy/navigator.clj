@@ -13,7 +13,7 @@
 (def default-options
   {:client           (client/new-http-client)
    :follow-redirects true
-   :headers          {}})
+   :http             {:headers {}}})
 
 (defrecord Navigator [href options response resource])
 
@@ -67,13 +67,9 @@
                 :response       (:response navigator)}))
       (params/build-query href params))))
 
-(defn- with-custom-headers [request headers]
-  (let [headers (merge (:headers request) headers)]
-    (assoc request :headers headers)))
-
 (defn- read-url [request options]
-  (let [options (merge default-options options)
-        request (with-custom-headers request (:headers options))
+  (let [options (deep-merge default-options options)
+        request (deep-merge (:http options) request)
         client (:client options)]
     (-> (http/exchange client request)
         (response->Navigator options))))
@@ -99,8 +95,8 @@
      options)))
 
 (defn- write-url [request options]
-  (let [options (merge default-options options)
-        request (with-custom-headers request (:headers options))
+  (let [options (deep-merge default-options options)
+        request (deep-merge (:http options) request)
         client (:client options)
         result (-> (http/exchange client request)
                    (response->Navigator options))]
@@ -256,6 +252,6 @@
 (defn set-header
   "set header option for navigator"
   [navigator header-key header-value]
-  (let [headers (get-in navigator [:options :headers] {})
+  (let [headers (get-in navigator [:options :http :headers] {})
         updated-headers (assoc headers header-key header-value)]
-    (assoc-in navigator [:options :headers] updated-headers)))
+    (assoc-in navigator [:options :http :headers] updated-headers)))
