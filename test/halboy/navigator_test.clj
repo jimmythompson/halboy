@@ -33,6 +33,26 @@
         (is (empty? (:headers options)))
         (is (not (nil? (:client options)))))))
 
+  (testing "should be able to pass options to the HTTP client"
+    (let [resource-url (create-url base-url "/users/thomas")]
+      (with-fake-http
+        (concat
+          (stubs/on-discover
+            base-url
+            :user {:href      "/users/{id}"
+                   :templated true})
+          (stubs/on-delete-with-headers
+            resource-url
+            {"Content-Type" "application/json"
+             "Accept"       "application/hal+json"
+             "My-Header"    "some-value"}
+            {:status 204}))
+        (let [result (->
+                       (navigator/discover base-url {:http {:headers {"My-Header" "some-value"}}})
+                       (navigator/delete :user {:id "thomas"}))
+              status (navigator/status result)]
+          (is (= 204 status))))))
+
   (testing "should be able to navigate through links in an API"
     (with-fake-http
       (concat
