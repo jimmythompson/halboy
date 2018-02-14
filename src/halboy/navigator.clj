@@ -241,8 +241,13 @@
 (defn follow-redirect
   "Fetches the url of the location header"
   [navigator]
-  (-> (extract-redirect-location navigator)
-      (get-url (:options navigator))))
+  (let [redirect-location (extract-redirect-location navigator)]
+    (if-not (nil? redirect-location)
+      (get-url redirect-location (:options navigator))
+      (throw (ex-info "Attempting to follow a redirect without a location header"
+                      {:headers  (get-in navigator [:response :headers])
+                       :resource resource
+                       :response (:response navigator)})))))
 
 (defn get-header
   "Retrieves a specified header from the response"

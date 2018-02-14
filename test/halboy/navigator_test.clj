@@ -307,6 +307,22 @@
         (is (= 200 status))
         (is (= "Thomas" (hal/get-property new-user :name))))))
 
+  (testing "should throw when trying to follow a redirect without a location header"
+    (with-fake-http
+      (concat
+        (stubs/on-discover
+          base-url
+          :users {:href "/users"})
+        (stubs/on-post
+          (create-url base-url "/users")
+          {:name "Thomas"}
+          {:status  201
+           :headers {}}))
+      (is (thrown? clojure.lang.ExceptionInfo
+                   (-> (navigator/discover base-url {:follow-redirects false})
+                       (navigator/post :users {:name "Thomas"})
+                       (navigator/follow-redirect))))))
+
   (testing "should be able to put to a resource"
     (with-fake-http
       (concat
