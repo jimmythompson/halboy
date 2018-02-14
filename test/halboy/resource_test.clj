@@ -37,12 +37,7 @@
     (is (= {:self {:href "/orders"}}
            (-> (new-resource)
                (add-link :self {:href "/orders"})
-               (links))))
-
-    (is (= {:self {:href "/orders"}}
-           (-> (new-resource)
-               (add-link :self {:href "/orders"})
-               (get-links)))))
+               (links)))))
 
   (testing "should be able to add links using add-href"
     (is (= {:href "/orders"}

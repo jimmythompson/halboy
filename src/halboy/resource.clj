@@ -20,13 +20,6 @@
   [resource]
   (:links resource))
 
-(defn get-links
-  "DEPRECATED: use 'links' instead.
-  Gets a map of all the links in the resource"
-  {:deprecated "2.0.7"}
-  [resource]
-  (links resource))
-
 (defn get-link
   "Gets a link from a resource"
   [resource key]
