@@ -40,6 +40,12 @@
 (defn- with-transformed-params [m]
   (update-if-present m [:query-params] stringify-keys))
 
+(defn- format-for-halboy [response]
+  (merge
+    (select-keys response [:body :headers :status])
+    {:url     (get-in response [:opts :url])
+     :raw     response}))
+
 (deftype DefaultHttpClient []
   protocol/HttpClient
   (exchange [_ {:keys [url method] :as request}]
@@ -49,7 +55,8 @@
                       (with-json-body))
           http-fn (http-method->fn method)]
       (-> @(http-fn url request)
-          (parse-json-response)))))
+          (parse-json-response)
+          (format-for-halboy)))))
 
 (defn new-http-client []
   (DefaultHttpClient.))

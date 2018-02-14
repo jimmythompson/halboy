@@ -41,7 +41,7 @@
                    {:self-link-value self-link}))))))
 
 (defn- response->Navigator [response options]
-  (let [current-url (get-in response [:opts :url])
+  (let [current-url (:url response)
         resource (-> (:body response)
                      haljson/map->resource)]
     (->Navigator current-url options response resource)))
