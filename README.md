@@ -152,6 +152,25 @@ using any of the methods above.
 ; "Dev"
 ```
 
+### Customisation
+
+### Custom HTTP clients
+
+Halboy offers an out-of-the-box HTTP client which uses HTTPKit. You can pass
+a HTTP client into Halboy using the `:client` key of the settings. It must
+adhere to the `halboy.http.protocol.HttpClient` protocol.
+
+#### HTTP settings
+
+All settings under the `:http` key are passed into the HTTP client. These are
+_deep_ merged into each request, with keys on the request taking priority.
+
+The request will always fill in the keys `:method`, `:url`, `:body`, and
+`:query-params`.
+
+Headers specified in HTTP settings will be merged with headers defined by
+`set-header`. If they share the same key, the `set-header` call wins.
+
 ## Contributing
 
 I'm happy to receive and go through feedback, bug reports, and pull requests.
@@ -162,5 +181,5 @@ If you need to contact me, my email is jimmy[at]jimmythompson.co.uk.
 To run the tests:
 
 ```sh
-$ lein test
+$ lein eftest
 ```
