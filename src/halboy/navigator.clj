@@ -10,16 +10,16 @@
             [halboy.argutils :refer [deep-merge]]
             [halboy.url :as url]))
 
-(def default-options
+(def default-settings
   {:client           (client/new-http-client)
    :follow-redirects true
    :http             {:headers {}}})
 
-(defrecord Navigator [href options response resource])
+(defrecord Navigator [href settings response resource])
 
 (defn- follow-redirect? [navigator]
   (and (= 201 (get-in navigator [:response :status]))
-       (get-in navigator [:options :follow-redirects])))
+       (get-in navigator [:settings :follow-redirects])))
 
 (defn- extract-header [navigator header]
   (get-in navigator [:response :headers header]))
@@ -29,8 +29,8 @@
         endpoint (extract-header navigator :location)]
     (url/resolve-url base-url endpoint)))
 
-(defn- get-resume-location [resource options]
-  (let [resume-from (:resume-from options)
+(defn- get-resume-location [resource settings]
+  (let [resume-from (:resume-from settings)
         self-link (hal/get-href resource :self)]
     (if resume-from
       resume-from
@@ -40,17 +40,17 @@
           (ex-info "No :resume-from option, and self link not absolute"
                    {:self-link-value self-link}))))))
 
-(defn- response->Navigator [response options]
+(defn- response->Navigator [response settings]
   (let [current-url (:url response)
         resource (-> (:body response)
                      haljson/map->resource)]
-    (->Navigator current-url options response resource)))
+    (->Navigator current-url settings response resource)))
 
 (defn- resource->Navigator
-  [resource options]
-  (let [current-url (get-resume-location resource options)
+  [resource settings]
+  (let [current-url (get-resume-location resource settings)
         response {:status nil}]
-    (->Navigator current-url options response resource)))
+    (->Navigator current-url settings response resource)))
 
 (defn- resolve-absolute-href [navigator href]
   (url/resolve-url (:href navigator) href))
@@ -67,76 +67,76 @@
                 :response       (:response navigator)}))
       (params/build-query href params))))
 
-(defn- read-url [request options]
-  (let [options (deep-merge default-options options)
-        request (deep-merge (:http options) request)
-        client (:client options)]
+(defn- read-url [request settings]
+  (let [settings (deep-merge default-settings settings)
+        request (deep-merge (:http settings) request)
+        client (:client settings)]
     (-> (http/exchange client request)
-        (response->Navigator options))))
+        (response->Navigator settings))))
 
 (defn- get-url
-  ([url options]
-   (get-url url {} options))
-  ([url params options]
+  ([url settings]
+   (get-url url {} settings))
+  ([url params settings]
    (read-url
      {:method       :get
       :url          url
       :query-params params}
-     options)))
+     settings)))
 
 (defn- delete-url
-  ([url options]
-   (delete-url url {} options))
-  ([url params options]
+  ([url settings]
+   (delete-url url {} settings))
+  ([url params settings]
    (read-url
      {:method       :delete
       :url          url
       :query-params params}
-     options)))
+     settings)))
 
-(defn- write-url [request options]
-  (let [options (deep-merge default-options options)
-        request (deep-merge (:http options) request)
-        client (:client options)
+(defn- write-url [request settings]
+  (let [settings (deep-merge default-settings settings)
+        request (deep-merge (:http settings) request)
+        client (:client settings)
         result (-> (http/exchange client request)
-                   (response->Navigator options))]
+                   (response->Navigator settings))]
     (if (follow-redirect? result)
       (-> (extract-redirect-location result)
-          (get-url options))
+          (get-url settings))
       result)))
 
 (defn- post-url
-  ([url body options]
-   (post-url url body {} options))
-  ([url body params options]
+  ([url body settings]
+   (post-url url body {} settings))
+  ([url body params settings]
    (write-url
      {:method       :post
       :url          url
       :body         body
       :query-params params}
-     options)))
+     settings)))
 
 (defn- put-url
-  ([url body options]
-   (put-url url body {} options))
-  ([url body params options]
+  ([url body settings]
+   (put-url url body {} settings))
+  ([url body params settings]
    (write-url
      {:method       :put
       :url          url
       :body         body
       :query-params params}
-     options)))
+     settings)))
 
 (defn- patch-url
-  ([url body options]
-   (patch-url url body {} options))
-  ([url body params options]
+  ([url body settings]
+   (patch-url url body {} settings))
+  ([url body params settings]
    (write-url
      {:method       :patch
       :url          url
       :body         body
       :query-params params}
-     options)))
+     settings)))
 
 (defn location
   "Gets the current location of the navigator"
@@ -146,7 +146,7 @@
 (defn settings
   "Gets the navigation settings"
   [navigator]
-  (:options navigator))
+  (:settings navigator))
 
 (defn resource
   "Gets the resource from the navigator"
@@ -168,18 +168,18 @@
   "Starts a conversation with an API. Use this on the discovery endpoint."
   ([href]
    (discover href {}))
-  ([href options]
-   (get-url href options)))
+  ([href settings]
+   (get-url href settings)))
 
 (defn resume
   "Resumes a conversation with an API. Your resource needs a self
   link for this to work. If your self link is not absolute, you
-  can pass an absolute url in the :resume-from key in the options
+  can pass an absolute url in the :resume-from key in the settings
   parameter."
   ([resource]
    (resume resource {}))
-  ([resource options]
-   (resource->Navigator resource options)))
+  ([resource settings]
+   (resource->Navigator resource settings)))
 
 (defn get
   "Fetches the contents of a link in an API."
@@ -189,7 +189,7 @@
    (let [resolved-link (resolve-link navigator link params)
          href (resolve-absolute-href navigator (:href resolved-link))
          query-params (:query-params resolved-link)]
-     (get-url href query-params (:options navigator)))))
+     (get-url href query-params (:settings navigator)))))
 
 (defn post
   "Posts content to a link in an API."
@@ -199,7 +199,7 @@
    (let [resolved-link (resolve-link navigator link params)
          href (resolve-absolute-href navigator (:href resolved-link))
          query-params (:query-params resolved-link)]
-     (post-url href body query-params (:options navigator)))))
+     (post-url href body query-params (:settings navigator)))))
 
 (defn put
   "Puts content to a link in an API."
@@ -209,7 +209,7 @@
    (let [resolved-link (resolve-link navigator link params)
          href (resolve-absolute-href navigator (:href resolved-link))
          query-params (:query-params resolved-link)]
-     (put-url href body query-params (:options navigator)))))
+     (put-url href body query-params (:settings navigator)))))
 
 (defn patch
   "Patch content to a link in an API."
@@ -219,7 +219,7 @@
    (let [resolved-link (resolve-link navigator link params)
          href (resolve-absolute-href navigator (:href resolved-link))
          query-params (:query-params resolved-link)]
-     (patch-url href body query-params (:options navigator)))))
+     (patch-url href body query-params (:settings navigator)))))
 
 (defn delete
   "Delete content of a link in an API."
@@ -229,14 +229,14 @@
    (let [resolved-link (resolve-link navigator link params)
          href (resolve-absolute-href navigator (:href resolved-link))
          query-params (:query-params resolved-link)]
-     (delete-url href query-params (:options navigator)))))
+     (delete-url href query-params (:settings navigator)))))
 
 (defn follow-redirect
   "Fetches the url of the location header"
   [navigator]
   (let [redirect-location (extract-redirect-location navigator)]
     (if-not (nil? redirect-location)
-      (get-url redirect-location (:options navigator))
+      (get-url redirect-location (:settings navigator))
       (throw (ex-info "Attempting to follow a redirect without a location header"
                       {:headers  (get-in navigator [:response :headers])
                        :resource resource
@@ -250,6 +250,6 @@
 (defn set-header
   "set header option for navigator"
   [navigator header-key header-value]
-  (let [headers (get-in navigator [:options :http :headers] {})
+  (let [headers (get-in navigator [:settings :http :headers] {})
         updated-headers (assoc headers header-key header-value)]
-    (assoc-in navigator [:options :http :headers] updated-headers)))
+    (assoc-in navigator [:settings :http :headers] updated-headers)))
