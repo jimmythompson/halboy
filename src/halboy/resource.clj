@@ -6,16 +6,12 @@
     (flatten [l r])
     r))
 
-(defrecord Resource [links embedded properties])
+(defn- ensure-link [x]
+  (if (string? x)
+    {:href x}
+    x))
 
-(defn new-resource
-  "Creates a new HAL resource"
-  ([]
-   (->Resource {} {} {}))
-  ([self]
-   (if (string? self)
-     (->Resource {:self {:href self}} {} {})
-     (->Resource {:self self} {} {}))))
+(defrecord Resource [links embedded properties])
 
 (defn links
   "Gets a map of all the links in the resource"
@@ -64,7 +60,8 @@
   "Adds a link to a resource. If the rel is already present,
   the values will form a vector."
   [resource rel m]
-  (let [existing-links (:links resource)
+  (let [m (ensure-link m)
+        existing-links (:links resource)
         updated-link (-> (get existing-links rel)
                          (create-or-append m))]
     (->Resource
@@ -72,21 +69,14 @@
       (:embedded resource)
       (:properties resource))))
 
+(def add-href add-link)
+
 (defn add-links
   "Adds each rel->link to the resource"
   [resource & args]
   (apply-pairs-or-map add-link resource args))
 
-(defn add-href
-  "Adds a link with the given href to a resource. If the rel
-  is already present, the values will form a vector."
-  [resource rel href]
-  (add-link resource rel {:href href}))
-
-(defn add-hrefs
-  "Adds each rel->href to the resource"
-  [resource & args]
-  (apply-pairs-or-map add-href resource args))
+(def add-hrefs add-links)
 
 (defn add-resource
   "Adds an embedded resource to the resource. If the key is
@@ -121,3 +111,11 @@
   resource. If the key is already present, it will be overwritten."
   [resource & args]
   (apply-pairs-or-map add-property resource args))
+
+(defn new-resource
+  "Creates a new HAL resource"
+  ([]
+   (->Resource {} {} {}))
+  ([self]
+   (-> (->Resource {} {} {})
+       (add-link :self self))))

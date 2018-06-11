@@ -51,13 +51,26 @@
                (add-link :self {:href "/orders"})
                (links)))))
 
-  (testing "should be able to add links using add-href"
+  (testing "should be able to add hrefs and it turns them into links"
+    (is (= {:href "/orders"}
+           (-> (new-resource)
+               (add-link :self "/orders")
+               (get-link :self))))
+
     (is (= {:href "/orders"}
            (-> (new-resource)
                (add-href :self "/orders")
                (get-link :self)))))
 
   (testing "should be able to add multiple hrefs and they should stack"
+    (is (= [{:href "/admins/2"}
+            {:href "/admins/5"}]
+           (-> (new-resource)
+               (add-links
+                 :ea:admin "/admins/2"
+                 :ea:admin "/admins/5")
+               (get-link :ea:admin))))
+
     (is (= [{:href "/admins/2"}
             {:href "/admins/5"}]
            (-> (new-resource)
