@@ -31,7 +31,15 @@
                (add-links
                  :ea:admin {:href "/admins/2" :title "Fred"}
                  :ea:admin {:href "/admins/5" :title "Kate"})
-               (get-link :ea:admin)))))
+               (get-link :ea:admin))))
+
+    (is (= ["/admins/2"
+            "/admins/5"]
+           (-> (new-resource)
+               (add-links
+                 :ea:admin {:href "/admins/2" :title "Fred"}
+                 :ea:admin {:href "/admins/5" :title "Kate"})
+               (get-href :ea:admin)))))
 
   (testing "should return nil when getting a link which does not exist"
     (is (nil? (-> (new-resource)

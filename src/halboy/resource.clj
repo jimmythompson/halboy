@@ -30,8 +30,10 @@
 (defn get-href
   "Gets a href within a resource"
   [resource key]
-  (-> (get-link resource key)
-      :href))
+  (let [link (get-link resource key)]
+    (if (seq? link)
+      (map :href link)
+      (:href link))))
 
 (defn resources
   "Gets all the embedded resources as a map"
