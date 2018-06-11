@@ -25,11 +25,11 @@ With Halboy you can create resources, and pull information from them.
 (require '[halboy.resource :as hal])
 
 (def my-resource
-    (-> (hal/new-resource {:href "/orders/123"})
-        (hal/add-link :creator {:href "/users/rob"})
-        (hal/add-resource :discount (-> (hal/new-resource {:href "/discounts/1256"})
+    (-> (hal/new-resource "/orders/123")
+        (hal/add-link :creator "/users/rob")
+        (hal/add-resource :discount (-> (hal/new-resource "/discounts/1256")
                                          (hal/add-property :discount-percentage 10)))
-        (hal/add-resource :items [(-> (hal/new-resource {:href "/items/534"})
+        (hal/add-resource :items [(-> (hal/new-resource "/items/534")
                                      (hal/add-property :price 25.48))])
         (hal/add-property :state :dispatching)))
 
@@ -61,18 +61,18 @@ You can also marshal your hal resources to and from maps, or JSON.
 (require '[halboy.json :as haljson])
 
 (def my-resource
-    (-> (hal/new-resource {:href "/orders/123"})
-        (hal/add-link :creator {:href "/users/rob"})
-        (hal/add-resource :items (-> (hal/new-resource {:href "/items/534"})
+    (-> (hal/new-resource "/orders/123")
+        (hal/add-link :creator "/users/rob")
+        (hal/add-resource :items (-> (hal/new-resource "/items/534")
                                      (hal/add-property :price 25.48)))
         (hal/add-property :state :dispatching)))
 
 (haljson/resource->map my-resource)
-; { :_links { :self { :href "/orders/123" },
-;           :creator { :href "/users/rob" } },
-;   :_embedded {:items { :_links { :self { :href "/items/534" } },
-;                      :price 25.48 } },
-;   :state :dispatching }
+; {:_links    {:self {:href "/orders/123"},
+;              :creator {:href "/users/rob"}},
+;  :_embedded {:items {:_links {:self {:href "/items/534"}},
+;                      :price  25.48}},
+;   :state    :dispatching}
 
 (haljson/resource->json my-resource)
 ; Formatted in these docs only.
