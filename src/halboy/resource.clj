@@ -12,8 +12,10 @@
   "Creates a new HAL resource"
   ([]
    (->Resource {} {} {}))
-  ([self-link]
-   (->Resource {:self self-link} {} {})))
+  ([self]
+   (if (string? self)
+     (->Resource {:self {:href self}} {} {})
+     (->Resource {:self self} {} {}))))
 
 (defn links
   "Gets a map of all the links in the resource"

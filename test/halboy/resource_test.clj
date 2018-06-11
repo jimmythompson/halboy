@@ -6,6 +6,10 @@
 (deftest halboy-resource
   (testing "should be able to add new-resource with self-link"
     (is (= {:href "/orders"}
+           (-> (new-resource "/orders")
+               (get-link :self))))
+
+    (is (= {:href "/orders"}
            (-> (new-resource {:href "/orders"})
                (get-link :self)))))
 
