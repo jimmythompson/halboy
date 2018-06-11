@@ -8,26 +8,24 @@
 (deftest halboy-json
   (let [resource
         (-> (hal/new-resource)
-            (hal/add-link :self {:href "/orders"})
+            (hal/add-link :self "/orders")
             (hal/add-link :curies {:name      "ea",
                                    :href      "http://example.com/docs/rels/{rel}",
                                    :templated true})
-            (hal/add-link :next {:href "/orders?page=2"})
+            (hal/add-link :next "/orders?page=2")
             (hal/add-link :ea:find {:href      "/orders{?id}",
                                     :templated true})
             (hal/add-link :ea:admin {:href "/admins/2", :title "Fred"})
             (hal/add-link :ea:admin {:href "/admins/5", :title "Kate"})
-            (hal/add-resource :ea:order (-> (hal/new-resource)
-                                            (hal/add-links {:self        {:href "/orders/123"},
-                                                            :ea:basket   {:href "/baskets/98712"},
-                                                            :ea:customer {:href "/customers/7809"}})
-                                            (hal/add-properties {:total    30.0,
-                                                                 :currency "USD",
+            (hal/add-resource :ea:order (-> (hal/new-resource "/orders/123")
+                                            (hal/add-links {:ea:basket   "/baskets/98712"
+                                                            :ea:customer "/customers/7809"})
+                                            (hal/add-properties {:total    30.0
+                                                                 :currency "USD"
                                                                  :status   "shipped"})))
-            (hal/add-resource :ea:order (-> (hal/new-resource)
-                                            (hal/add-links {:self        {:href "/orders/124"},
-                                                            :ea:basket   {:href "/baskets/97213"},
-                                                            :ea:customer {:href "/customers/12369"}})
+            (hal/add-resource :ea:order (-> (hal/new-resource "/orders/124")
+                                            (hal/add-links {:ea:basket   "/baskets/97213"
+                                                            :ea:customer "/customers/12369"})
                                             (hal/add-properties {:total    20.0,
                                                                  :currency "USD",
                                                                  :status   "processing"})))
@@ -71,8 +69,7 @@
              (haljson/json->resource json-representation)))))
 
   (testing "map->resource should parse links"
-    (is (= (-> (hal/new-resource)
-               (hal/add-link :self {:href "/orders"}))
+    (is (= (hal/new-resource "/orders")
            (haljson/map->resource {:_links {:self {:href "/orders"}}}))))
 
   (testing "map->resource should include all information about a link"
@@ -84,34 +81,29 @@
 
   (testing "map->resource should parse arrays of links"
     (is (= (-> (hal/new-resource)
-               (hal/add-links :ea:admin {:href "/admins/2"}
-                              :ea:admin {:href "/admins/5"}))
+               (hal/add-links :ea:admin "/admins/2"
+                              :ea:admin "/admins/5"))
            (haljson/map->resource {:_links {:ea:admin [{:href "/admins/2"}
                                                        {:href "/admins/5"}]}}))))
 
   (testing "map->resource should parse embedded resources"
-    (let [order-resource (-> (hal/new-resource)
-                             (hal/add-link :self {:href "/orders/123"}))]
+    (let [order-resource (hal/new-resource "/orders/123")]
       (is (= (-> (hal/new-resource)
                  (hal/add-resource :ea:order order-resource))
              (haljson/map->resource {:_embedded {:ea:order {:_links {:self {:href "/orders/123"}}}}})))))
 
   (testing "map->resource should parse doubly embedded resources"
-    (let [purchaser-resource (-> (hal/new-resource)
-                                 (hal/add-link :self {:href "/customers/1"}))
-          order-resource (-> (hal/new-resource)
-                             (hal/add-resource :customer purchaser-resource)
-                             (hal/add-link :self {:href "/orders/123"}))]
+    (let [purchaser-resource (hal/new-resource "/customers/1")
+          order-resource (-> (hal/new-resource "/orders/123")
+                             (hal/add-resource :customer purchaser-resource))]
       (is (= (-> (hal/new-resource)
                  (hal/add-resource :ea:order order-resource))
              (haljson/map->resource {:_embedded {:ea:order {:_links    {:self {:href "/orders/123"}}
                                                             :_embedded {:customer {:_links {:self {:href "/customers/1"}}}}}}})))))
 
   (testing "map->resource should parse arrays of embedded resources"
-    (let [first-order (-> (hal/new-resource)
-                          (hal/add-link :self {:href "/orders/123"}))
-          second-order (-> (hal/new-resource)
-                           (hal/add-link :self {:href "/orders/124"}))]
+    (let [first-order (hal/new-resource "/orders/123")
+          second-order (hal/new-resource "/orders/124")]
       (is (= (-> (hal/new-resource)
                  (hal/add-resources :ea:order first-order
                                     :ea:order second-order))
@@ -124,11 +116,10 @@
            (haljson/map->resource {:total 20.0}))))
 
   (testing "resource->map should render doubly embedded resources"
-    (let [purchaser-resource (-> (hal/new-resource)
-                                 (hal/add-link :self {:href "/customers/1"}))
-          order-resource (-> (hal/new-resource)
-                             (hal/add-resource :customer purchaser-resource)
-                             (hal/add-link :self {:href "/orders/123"}))]
+    (let [purchaser-resource (hal/new-resource "/customers/1")
+
+          order-resource (-> (hal/new-resource "/orders/123")
+                             (hal/add-resource :customer purchaser-resource))]
       (is (= (-> (hal/new-resource)
                  (hal/add-resource :ea:order order-resource)
                  (haljson/resource->map))

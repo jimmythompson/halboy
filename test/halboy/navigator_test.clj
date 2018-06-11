@@ -63,8 +63,7 @@
         (stubs/on-get
           (create-url base-url "/users")
           {:status 200
-           :body   (-> (hal/new-resource)
-                       (hal/add-link :self {:href "/users"})
+           :body   (-> (hal/new-resource "/users")
                        (hal/add-resources
                          :users (create-user "fred")
                          :users (create-user "sue")
@@ -98,8 +97,7 @@
         (stubs/on-get
           (create-url base-url "/users") {:admin true}
           {:status 200
-           :body   (-> (hal/new-resource)
-                       (hal/add-link :self {:href "/users"})
+           :body   (-> (hal/new-resource "/users")
                        (hal/add-resources
                          :users (create-user "fred")
                          :users (create-user "sue")
@@ -126,8 +124,7 @@
         (stubs/on-get
           (create-url base-url "/users/thomas/friends") {:mutual true}
           {:status 200
-           :body   (-> (hal/new-resource)
-                       (hal/add-link :self {:href "/users/thomas/friends"})
+           :body   (-> (hal/new-resource "/users/thomas/friends")
                        (hal/add-resources
                          :users (create-user "fred")
                          :users (create-user "sue")
@@ -157,8 +154,7 @@
         (stubs/on-get
           (create-url base-url "/users/thomas")
           {:status 200
-           :body   (-> (hal/new-resource)
-                       (hal/add-link :self "/users/thomas")
+           :body   (-> (hal/new-resource "/users/thomas")
                        (hal/add-property :name "Thomas")
                        (json/resource->json))}))
       (let [result (-> (navigator/discover base-url)
@@ -198,8 +194,7 @@
         (stubs/on-get
           (create-url base-url "/users/thomas")
           {:status 200
-           :body   (-> (hal/new-resource)
-                       (hal/add-link :self "/users/thomas")
+           :body   (-> (hal/new-resource "/users/thomas")
                        (hal/add-property :name "Thomas")
                        (hal/add-property :surname "Svensson")
                        (json/resource->json))}))
@@ -241,8 +236,7 @@
         (stubs/on-get
           (create-url base-url "/users/thomas/items/1")
           {:status 200
-           :body   (-> (hal/new-resource)
-                       (hal/add-link :self "/users/thomas/items/1")
+           :body   (-> (hal/new-resource "/users/thomas/items/1")
                        (hal/add-property :name "Sponge")
                        (json/resource->json))}))
       (let [result (-> (navigator/discover base-url)
@@ -302,8 +296,7 @@
         (stubs/on-get
           (create-url base-url "/users/thomas")
           {:status 200
-           :body   (-> (hal/new-resource)
-                       (hal/add-link :self "/users/thomas")
+           :body   (-> (hal/new-resource "/users/thomas")
                        (hal/add-property :name "Thomas")
                        (json/resource->json))}))
       (let [result (-> (navigator/discover base-url {:follow-redirects false})
@@ -342,8 +335,7 @@
           (create-url base-url "/users/thomas")
           {:name "Thomas"}
           {:status 200
-           :body   (-> (hal/new-resource)
-                       (hal/add-link :self "/users/thomas")
+           :body   (-> (hal/new-resource "/users/thomas")
                        (hal/add-property :name "Thomas")
                        (json/resource->json))}))
       (let [result (-> (navigator/discover base-url)
@@ -368,8 +360,7 @@
         (stubs/on-get
           (create-url base-url "/users/thomas")
           {:status 200
-           :body   (-> (hal/new-resource)
-                       (hal/add-link :self "/users/thomas")
+           :body   (-> (hal/new-resource "/users/thomas")
                        (hal/add-property :name "Thomas")
                        (json/resource->json))}))
       (let [result (-> (navigator/discover base-url)
@@ -427,18 +418,15 @@
       (stubs/on-get
         (create-url base-url "/users")
         {:status 200
-         :body   (-> (hal/new-resource)
-                     (hal/add-link :self {:href "/users"})
+         :body   (-> (hal/new-resource "/users")
                      (hal/add-resources
                        :users [(create-user "fred")
                                (create-user "sue")
                                (create-user "mary")])
                      (json/resource->json))})
-      (let [resource (-> (hal/new-resource)
-                         (hal/add-links
-                           {:self  {:href base-url}
-                            :users {:href      "/users{?admin}"
-                                    :templated true}}))
+      (let [resource (-> (hal/new-resource base-url)
+                         (hal/add-link :users {:href      "/users{?admin}"
+                                               :templated true}))
             result (-> (navigator/resume resource)
                        (navigator/get :users))
             status (navigator/status result)
@@ -455,18 +443,15 @@
       (stubs/on-get
         (create-url base-url "/users")
         {:status 200
-         :body   (-> (hal/new-resource)
-                     (hal/add-link :self {:href "/users"})
+         :body   (-> (hal/new-resource "/users")
                      (hal/add-resources
                        :users [(create-user "fred")
                                (create-user "sue")
                                (create-user "mary")])
                      (json/resource->json))})
-      (let [resource (-> (hal/new-resource)
-                         (hal/add-links
-                           {:self  {:href "/"}
-                            :users {:href      "/users{?admin}"
-                                    :templated true}}))
+      (let [resource (-> (hal/new-resource "/")
+                         (hal/add-link :users {:href      "/users{?admin}"
+                                               :templated true}))
             result (-> (navigator/resume resource {:resume-from base-url})
                        (navigator/get :users))
             status (navigator/status result)
