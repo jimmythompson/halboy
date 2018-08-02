@@ -74,6 +74,16 @@
     (-> (http/exchange client request)
         (response->Navigator settings))))
 
+(defn- head-url
+  ([url settings]
+   (head-url url {} settings))
+  ([url params settings]
+   (read-url
+     {:method       :head
+      :url          url
+      :query-params params}
+     settings)))
+
 (defn- get-url
   ([url settings]
    (get-url url {} settings))
@@ -180,6 +190,16 @@
    (resume resource {}))
   ([resource settings]
    (resource->Navigator resource settings)))
+
+(defn head
+  "Performs a HEAD request against a link in an API."
+  ([navigator link]
+   (head navigator link {}))
+  ([navigator link params]
+   (let [resolved-link (resolve-link navigator link params)
+         href (resolve-absolute-href navigator (:href resolved-link))
+         query-params (:query-params resolved-link)]
+     (head-url href query-params (:settings navigator)))))
 
 (defn get
   "Fetches the contents of a link in an API."

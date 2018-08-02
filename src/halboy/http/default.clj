@@ -18,7 +18,8 @@
 
 (defn http-method->fn [method]
   (get-in
-    {:get    http/get
+    {:head   http/head
+     :get    http/get
      :post   http/post
      :put    http/put
      :patch  http/patch
