@@ -192,6 +192,7 @@
    (resource->Navigator resource settings)))
 
 (defn head
+  "Performs a HEAD request against a link in an API."
   ([navigator link]
    (head navigator link {}))
   ([navigator link params]
