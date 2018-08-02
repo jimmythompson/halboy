@@ -371,6 +371,22 @@
         (is (= 200 status))
         (is (= "Thomas" (hal/get-property user :name))))))
 
+  (testing "should be able to head to a resource"
+    (with-fake-http
+      (concat
+        (stubs/on-discover
+          base-url
+          :user {:href      "/users/{id}"
+                 :templated true})
+        (stubs/on-head
+          (create-url base-url "/users/thomas")
+          {:status 200}))
+      (let [result (-> (navigator/discover base-url)
+                     (navigator/head :user {:id "thomas"}))
+            status (navigator/status result)]
+
+        (is (= 200 status)))))
+
   (testing "should be able to set header for delete"
     (let [resource-url (create-url base-url "/users/thomas")]
       (with-fake-http

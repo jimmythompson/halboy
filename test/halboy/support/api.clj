@@ -15,6 +15,11 @@
                 ((partial apply add-links) kvs)
                 resource->json)}])
 
+(defn on-head
+  ([url response]
+   [{:method :head :url url}
+    response]))
+
 (defn on-get
   ([url response]
    [{:method :get :url url}
