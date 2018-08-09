@@ -114,6 +114,34 @@
         (is (= ["Fred" "Sue" "Mary"]
                (map #(hal/get-property % :name) users))))))
 
+  (testing "should be able to navigate through links with multiple query params"
+    (with-fake-http
+      (concat
+        (stubs/on-discover
+          base-url
+          :users {:href      "/users{?admin,owner}"
+                  :templated true})
+        (stubs/on-get
+          (create-url base-url "/users") {:admin true
+                                          :owner false}
+          {:status 200
+           :body   (-> (hal/new-resource "/users")
+                     (hal/add-resources
+                       :users (create-user "fred")
+                       :users (create-user "sue"))
+                     (json/resource->json))}))
+      (let [result (-> (navigator/discover base-url)
+                     (navigator/get :users {:admin true
+                                            :owner false}))
+            status (navigator/status result)
+            users (-> (navigator/resource result)
+                    (hal/get-resource :users))]
+
+        (is (= 200 status))
+
+        (is (= ["Fred" "Sue"]
+              (map #(hal/get-property % :name) users))))))
+
   (testing "should be able to navigate with a mixture of template and query params"
     (with-fake-http
       (concat

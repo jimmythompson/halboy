@@ -1,7 +1,7 @@
 (ns halboy.params)
 
 (def template-param-pattern #"\{([\w-_]+)\}")
-(def param-pattern #"\{(\??[\w-_]+)\}")
+(def param-pattern #"\{(\??[\w-_,]+)\}")
 
 (defn- query-param? [param]
   (clojure.string/starts-with? param "?"))
