@@ -235,6 +235,32 @@
         (is (= "Thomas" (hal/get-property new-user :name)))
         (is (= "Svensson" (hal/get-property new-user :surname))))))
 
+  (testing "should handle query params on post"
+    (with-fake-http
+      (concat
+        (stubs/on-discover
+          base-url
+          :users {:href "/users{?first,second}"
+                  :templated true})
+        (stubs/on-post-redirect
+          (create-url base-url "/users")
+          {:name "Thomas"}
+          "/users/thomas")
+        (stubs/on-get
+          (create-url base-url "/users/thomas")
+          {:status 200
+           :body   (-> (hal/new-resource)
+                     (hal/add-link :self "/users/thomas")
+                     (hal/add-property :name "Thomas")
+                     (json/resource->json))}))
+      (let [result (-> (navigator/discover base-url)
+                     (navigator/post :users {:name "Thomas"}))
+            status (navigator/status result)
+            new-user (navigator/resource result)]
+
+        (is (= 200 status))
+        (is (= "Thomas" (hal/get-property new-user :name))))))
+
   (testing "should handle query params on delete"
     (with-fake-http
       (concat
