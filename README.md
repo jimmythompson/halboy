@@ -8,13 +8,6 @@ A Clojure library for all things hypermedia.
 * Marshal to and from JSON, or a map
 * Navigate JSON+HAL APIs
 
-## New in 3.0.0
-
-* You can now specify your own JSON HTTP client.
-* You can now pass global request options through to the embedded HTTP client.
-* `resource/get-links` has been renamed to `resource/links`.
-* `navigator/options` has been renamed to `navigator/settings`.
-
 ## API
 
 ### Resources
