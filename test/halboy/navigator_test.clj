@@ -95,7 +95,7 @@
           :users {:href      "/users{?admin}"
                   :templated true})
         (stubs/on-get
-          (create-url base-url "/users") {:admin true}
+          (create-url base-url "/users") {:admin "true"}
           {:status 200
            :body   (-> (hal/new-resource "/users")
                        (hal/add-resources
@@ -122,8 +122,8 @@
           :users {:href      "/users{?admin,owner}"
                   :templated true})
         (stubs/on-get
-          (create-url base-url "/users") {:admin true
-                                          :owner false}
+          (create-url base-url "/users") {:admin "true"
+                                          :owner "false"}
           {:status 200
            :body   (-> (hal/new-resource "/users")
                      (hal/add-resources
@@ -150,7 +150,7 @@
           :friends {:href      "/users/{id}/friends{?mutual}"
                     :templated true})
         (stubs/on-get
-          (create-url base-url "/users/thomas/friends") {:mutual true}
+          (create-url base-url "/users/thomas/friends") {:mutual "true"}
           {:status 200
            :body   (-> (hal/new-resource "/users/thomas/friends")
                        (hal/add-resources
