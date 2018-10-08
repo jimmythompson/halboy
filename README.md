@@ -160,6 +160,27 @@ Halboy offers an out-of-the-box HTTP client which uses HTTPKit. You can pass
 a HTTP client into Halboy using the `:client` key of the settings. It must
 adhere to the `halboy.http.protocol.HttpClient` protocol.
 
+#### CachableHttpClient
+Halboy also offers an HTTP client with caching support which is an in-memory 
+cache. It uses `clojure.core.cache TTLCache` for caching with the default TTL of 
+2000 miliseconds which can be overridden to a different type of cache of choice
+or a different TTL. 
+```clojure
+; default cachable client
+(navigator/discover "https://api.example.com"
+ {:client           (halboy.http.cachable/new-http-client)
+  :follow-redirects true
+  :http             {:headers {}}})
+  
+; cachable client with an hour TTL
+(require '[clojure.core.cache :as cache])
+
+(def in-memory-cache (atom (cache/ttl-cache-factory {} :ttl 3600000)))
+  (navigator/discover "https://api.example.com"
+     {:client           (halboy.http.cachable/new-http-client in-memory-cache)
+      :follow-redirects true
+      :http             {:headers {}}})
+```
 #### HTTP settings
 
 All settings under the `:http` key are passed into the HTTP client. These are
