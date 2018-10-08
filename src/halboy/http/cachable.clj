@@ -37,7 +37,7 @@
   (update-if-present
     response [:body]
     #(-> (json/parse-string %)
-       (keywordize-keys))))
+         (keywordize-keys))))
 
 (defn- with-transformed-params [m]
   (update-if-present m [:query-params] stringify-keys))
@@ -53,24 +53,24 @@
   protocol/HttpClient
   (exchange [_ {:keys [url method] :as request}]
     (let [request (-> request
-                    (with-default-options)
-                    (with-transformed-params)
-                    (with-json-body))
+                      (with-default-options)
+                      (with-transformed-params)
+                      (with-json-body))
           http-fn (http-method->fn method)
           response (if (cache/has? @cache-store request)
                      (get (cache/hit @cache-store request) request)
                      (let [updated-cache (swap! cache-store #(cache/miss % request
-                                                               @(http-fn url request)))]
+                                                                         @(http-fn url request)))]
                        (get updated-cache request))
                      )
           ]
 
       (-> response
-        (parse-json-response)
-        (format-for-halboy)))))
+          (parse-json-response)
+          (format-for-halboy)))))
 
 (defn new-http-client
   ([]
    (new-http-client (atom (cache/ttl-cache-factory {} :ttl 2000))))
   ([cache-store]
-     (CachableHttpClient. cache-store)))
+   (CachableHttpClient. cache-store)))

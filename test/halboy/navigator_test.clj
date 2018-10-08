@@ -126,21 +126,21 @@
                                           :owner "false"}
           {:status 200
            :body   (-> (hal/new-resource "/users")
-                     (hal/add-resources
-                       :users (create-user "fred")
-                       :users (create-user "sue"))
-                     (json/resource->json))}))
+                       (hal/add-resources
+                         :users (create-user "fred")
+                         :users (create-user "sue"))
+                       (json/resource->json))}))
       (let [result (-> (navigator/discover base-url)
-                     (navigator/get :users {:admin true
-                                            :owner false}))
+                       (navigator/get :users {:admin true
+                                              :owner false}))
             status (navigator/status result)
             users (-> (navigator/resource result)
-                    (hal/get-resource :users))]
+                      (hal/get-resource :users))]
 
         (is (= 200 status))
 
         (is (= ["Fred" "Sue"]
-              (map #(hal/get-property % :name) users))))))
+               (map #(hal/get-property % :name) users))))))
 
   (testing "should be able to navigate with a mixture of template and query params"
     (with-fake-http
@@ -240,7 +240,7 @@
       (concat
         (stubs/on-discover
           base-url
-          :users {:href "/users{?first,second}"
+          :users {:href      "/users{?first,second}"
                   :templated true})
         (stubs/on-post-redirect
           (create-url base-url "/users")
@@ -250,11 +250,11 @@
           (create-url base-url "/users/thomas")
           {:status 200
            :body   (-> (hal/new-resource)
-                     (hal/add-link :self "/users/thomas")
-                     (hal/add-property :name "Thomas")
-                     (json/resource->json))}))
+                       (hal/add-link :self "/users/thomas")
+                       (hal/add-property :name "Thomas")
+                       (json/resource->json))}))
       (let [result (-> (navigator/discover base-url)
-                     (navigator/post :users {:name "Thomas"}))
+                       (navigator/post :users {:name "Thomas"}))
             status (navigator/status result)
             new-user (navigator/resource result)]
 
@@ -436,7 +436,7 @@
           (create-url base-url "/users/thomas")
           {:status 200}))
       (let [result (-> (navigator/discover base-url)
-                     (navigator/head :user {:id "thomas"}))
+                       (navigator/head :user {:id "thomas"}))
             status (navigator/status result)]
 
         (is (= 200 status)))))

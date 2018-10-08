@@ -44,8 +44,8 @@
 (defn- format-for-halboy [response]
   (merge
     (select-keys response [:body :headers :status])
-    {:url     (get-in response [:opts :url])
-     :raw     response}))
+    {:url (get-in response [:opts :url])
+     :raw response}))
 
 (deftype DefaultHttpClient []
   protocol/HttpClient

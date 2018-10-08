@@ -10,7 +10,7 @@
   (testing "defaultHttpClient"
     (with-fake-http
       [{:url base-url :method :get} {:status 201 :body "{}"}]
-      (let [client (http-client/new-http-client )
+      (let [client (http-client/new-http-client)
             request {:url    base-url
                      :method :get}]
         (is (=

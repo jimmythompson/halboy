@@ -48,7 +48,7 @@
 (defn- determine-full-query-params
   [params remaining-param-names expanded-uri-query-params]
   (merge (select-keys params remaining-param-names)
-    expanded-uri-query-params))
+         expanded-uri-query-params))
 
 (defn build-query [templated-uri params]
   (let [stringified-params (stringify-params params)
