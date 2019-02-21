@@ -8,6 +8,21 @@ A Clojure library for all things hypermedia.
 * Marshal to and from JSON, or a map
 * Navigate JSON+HAL APIs
 
+## New in version 5
+
+Halboy now filters out keys with nil values:
+
+```clojure
+(require '[halboy.resource :as hal])
+
+(-> (hal/new-resource)
+        (hal/add-links
+            :self "/orders/123" 
+            :creator nil)
+        (links))
+; { :self "/orders/123" }
+```
+
 ## API
 
 ### Resources
