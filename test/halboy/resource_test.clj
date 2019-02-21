@@ -24,7 +24,7 @@
                (add-link :self {:href "/orders"})
                (get-href :self)))))
 
-  (testing "should not add falsy hrefs"
+  (testing "should not add falsy links"
     (is (false?
           (contains?
             (-> (new-resource)
@@ -132,6 +132,35 @@
                      (add-properties {:total    30.0
                                       :currency "USD"
                                       :status   "shipped"})))
+               (get-resource :ea:order)))))
+
+  (testing "should not be able to add nil resources"
+    (is (false?
+          (contains?
+            (-> (new-resource)
+                (add-resource :ea:order nil)
+                (resources))
+            :ea:order))))
+
+  (testing "should be able to mix nil and not nil resources"
+    (is (= (-> (new-resource)
+               (add-links {:self        {:href "/orders/123"}
+                           :ea:basket   {:href "/baskets/98712"}
+                           :ea:customer {:href "/customers/7809"}})
+               (add-properties {:total    30.0
+                                :currency "USD"
+                                :status   "shipped"}))
+           (-> (new-resource)
+               (add-resources
+                 :ea:order
+                 (-> (new-resource)
+                     (add-links {:self        {:href "/orders/123"}
+                                 :ea:basket   {:href "/baskets/98712"}
+                                 :ea:customer {:href "/customers/7809"}})
+                     (add-properties {:total    30.0
+                                      :currency "USD"
+                                      :status   "shipped"}))
+                 :ea:order nil)
                (get-resource :ea:order)))))
 
   (testing "should be able to add a list of resources"
@@ -374,7 +403,20 @@
     (is (= 14
            (-> (new-resource)
                (add-property :currently-processing 14)
-               (get-property :currently-processing)))))
+               (get-property :currently-processing))))
+
+    (is (false?
+           (-> (new-resource)
+               (add-property :active false)
+               (get-property :active)))))
+
+  (testing "should not add nil properties to the resource"
+    (is (false?
+          (contains?
+            (-> (new-resource)
+                (add-property :active nil)
+                (properties))
+            :active))))
 
   (testing "should be able to add multiple properties"
     (let [resource (-> (new-resource)

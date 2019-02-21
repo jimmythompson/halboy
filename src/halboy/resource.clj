@@ -83,13 +83,15 @@
   "Adds an embedded resource to the resource. If the key is
   already present, the values will form a vector."
   [resource key r]
-  (let [existing-resources (:embedded resource)
-        updated-resource (-> (get existing-resources key)
-                             (create-or-append r))]
-    (->Resource
-      (:links resource)
-      (assoc existing-resources key updated-resource)
-      (:properties resource))))
+  (if (some? r)
+    (let [existing-resources (:embedded resource)
+          updated-resource (-> (get existing-resources key)
+                               (create-or-append r))]
+      (->Resource
+        (:links resource)
+        (assoc existing-resources key updated-resource)
+        (:properties resource)))
+    resource))
 
 (defn add-resources
   "Adds each key->resource pair to the resource. If the same key
@@ -101,11 +103,13 @@
   "Adds a new property to the resource. If the key is already
   present, it will be overwritten."
   [resource rel r]
-  (let [existing-properties (:properties resource)]
-    (->Resource
-      (:links resource)
-      (:embedded resource)
-      (assoc existing-properties rel r))))
+  (if (some? r)
+    (let [existing-properties (:properties resource)]
+      (->Resource
+        (:links resource)
+        (:embedded resource)
+        (assoc existing-properties rel r)))
+    resource))
 
 (defn add-properties
   "Takes a map, or key->value pairs. It adds each key->value pair to the
