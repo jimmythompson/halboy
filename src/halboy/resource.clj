@@ -60,14 +60,15 @@
   "Adds a link to a resource. If the rel is already present,
   the values will form a vector."
   [resource rel m]
-  (let [m (ensure-link m)
-        existing-links (:links resource)
-        updated-link (-> (get existing-links rel)
-                         (create-or-append m))]
-    (->Resource
-      (assoc existing-links rel updated-link)
-      (:embedded resource)
-      (:properties resource))))
+  (if-let [m (ensure-link m)]
+    (let [existing-links (:links resource)
+          updated-link (-> (get existing-links rel)
+                           (create-or-append m))]
+      (->Resource
+        (assoc existing-links rel updated-link)
+        (:embedded resource)
+        (:properties resource)))
+    resource))
 
 (def add-href add-link)
 

@@ -24,6 +24,14 @@
                (add-link :self {:href "/orders"})
                (get-href :self)))))
 
+  (testing "should not add falsy hrefs"
+    (is (false?
+          (contains?
+            (-> (new-resource)
+                (add-link :self nil)
+                (links))
+            :self))))
+
   (testing "should be able to add multiple links and they should stack"
     (is (= [{:href "/admins/2" :title "Fred"}
             {:href "/admins/5" :title "Kate"}]
@@ -39,7 +47,22 @@
                (add-links
                  :ea:admin {:href "/admins/2" :title "Fred"}
                  :ea:admin {:href "/admins/5" :title "Kate"})
-               (get-href :ea:admin)))))
+               (get-href :ea:admin))))
+
+    (is (= {:href "/admins/2" :title "Fred"}
+           (-> (new-resource)
+               (add-links
+                 :ea:admin nil
+                 :ea:admin {:href "/admins/2" :title "Fred"})
+               (get-link :ea:admin)))))
+
+  (testing "should be able to mix truthy and falsy links"
+    (is (= nil
+           (-> (new-resource)
+               (add-links
+                 :self {:href "/orders"}
+                 :ea:admin nil)
+               (get-link :ea:admin)))))
 
   (testing "should return nil when getting a link which does not exist"
     (is (nil? (-> (new-resource)
@@ -77,7 +100,15 @@
                (add-hrefs
                  :ea:admin "/admins/2"
                  :ea:admin "/admins/5")
-               (get-link :ea:admin)))))
+               (get-link :ea:admin))))
+
+    (is (= ["/admins/2"
+            "/admins/5"]
+           (-> (new-resource)
+               (add-links
+                 :ea:admin "/admins/2"
+                 :ea:admin "/admins/5")
+               (get-href :ea:admin)))))
 
   (testing "should return nil when getting a href which does not exist"
     (is (nil? (-> (new-resource)

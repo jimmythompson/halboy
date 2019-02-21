@@ -15,8 +15,8 @@
             (hal/add-link :next "/orders?page=2")
             (hal/add-link :ea:find {:href      "/orders{?id}",
                                     :templated true})
-            (hal/add-link :ea:admin {:href "/admins/2", :title "Fred"})
-            (hal/add-link :ea:admin {:href "/admins/5", :title "Kate"})
+            (hal/add-link :ea:admin {:href "/admins/2" :title "Fred"})
+            (hal/add-link :ea:admin {:href "/admins/5" :title "Kate"})
             (hal/add-resource :ea:order (-> (hal/new-resource "/orders/123")
                                             (hal/add-links {:ea:basket   "/baskets/98712"
                                                             :ea:customer "/customers/7809"})
@@ -41,8 +41,8 @@
                                   :next     {:href "/orders?page=2"},
                                   :ea:find  {:href      "/orders{?id}",
                                              :templated true},
-                                  :ea:admin [{:href "/admins/2", :title "Fred"}
-                                             {:href "/admins/5", :title "Kate"}]}
+                                  :ea:admin [{:href "/admins/2" :title "Fred"}
+                                             {:href "/admins/5" :title "Kate"}]}
            :_embedded            {:ea:order [(merge
                                                {:_links {:self        {:href "/orders/123"},
                                                          :ea:basket   {:href "/baskets/98712"},
