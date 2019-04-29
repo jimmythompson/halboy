@@ -15,11 +15,24 @@
    :follow-redirects true
    :http             {:headers {}}})
 
+(def error-descriptions
+  {:not-valid-json "Response body was not valid JSON"})
+
+(defn failed? [response]
+  (some? (:error response)))
+
+(defn build-error [response]
+  (let [error (:error response)]
+    (ex-info
+      (get-in error-descriptions [(:code error)] "Unknown error")
+      response
+      (:cause error))))
+
 (defrecord Navigator [href settings response resource])
 
 (defn- follow-redirect? [navigator]
   (and (= 201 (get-in navigator [:response :status]))
-       (get-in navigator [:settings :follow-redirects])))
+    (get-in navigator [:settings :follow-redirects])))
 
 (defn- extract-header [navigator header]
   (get-in navigator [:response :headers header]))
@@ -38,13 +51,15 @@
         self-link
         (throw
           (ex-info "No :resume-from option, and self link not absolute"
-                   {:self-link-value self-link}))))))
+            {:self-link-value self-link}))))))
 
 (defn- response->Navigator [response settings]
-  (let [current-url (:url response)
-        resource (-> (:body response)
+  (if (failed? response)
+    (throw (build-error response))
+    (let [current-url (:url response)
+          resource (-> (:body response)
                      haljson/map->resource)]
-    (->Navigator current-url settings response resource)))
+      (->Navigator current-url settings response resource))))
 
 (defn- resource->Navigator
   [resource settings]
@@ -72,7 +87,7 @@
         request (deep-merge (:http settings) request)
         client (:client settings)]
     (-> (http/exchange client request)
-        (response->Navigator settings))))
+      (response->Navigator settings))))
 
 (defn- head-url
   ([url settings]
@@ -109,10 +124,10 @@
         request (deep-merge (:http settings) request)
         client (:client settings)
         result (-> (http/exchange client request)
-                   (response->Navigator settings))]
+                 (response->Navigator settings))]
     (if (follow-redirect? result)
       (-> (extract-redirect-location result)
-          (get-url settings))
+        (get-url settings))
       result)))
 
 (defn- post-url
@@ -172,7 +187,7 @@
   "Gets the status code from the last response from the navigator"
   [navigator]
   (-> (response navigator)
-      :status))
+    :status))
 
 (defn discover
   "Starts a conversation with an API. Use this on the discovery endpoint."
@@ -258,9 +273,9 @@
     (if-not (nil? redirect-location)
       (get-url redirect-location (:settings navigator))
       (throw (ex-info "Attempting to follow a redirect without a location header"
-                      {:headers  (get-in navigator [:response :headers])
-                       :resource resource
-                       :response (:response navigator)})))))
+               {:headers  (get-in navigator [:response :headers])
+                :resource resource
+                :response (:response navigator)})))))
 
 (defn get-header
   "Retrieves a specified header from the response"

@@ -5,7 +5,8 @@
     [org.httpkit.client :as http]
     [clojure.core.cache :as cache]
     [halboy.argutils :refer [deep-merge]]
-    [halboy.http.protocol :as protocol]))
+    [halboy.http.protocol :as protocol])
+  (:import [com.fasterxml.jackson.core JsonParseException]))
 
 (def default-http-options
   {:as      :text
@@ -34,20 +35,24 @@
   (update-if-present m [:body] json/generate-string))
 
 (defn- parse-json-response [response]
-  (update-if-present
-    response [:body]
-    #(-> (json/parse-string %)
-         (keywordize-keys))))
+  (try
+    (update-if-present
+      response [:body]
+      #(-> (json/parse-string %)
+         (keywordize-keys)))
+    (catch JsonParseException ex
+      (assoc response
+        :error {:code :not-valid-json
+                :cause ex}))))
 
 (defn- with-transformed-params [m]
   (update-if-present m [:query-params] stringify-keys))
 
 (defn- format-for-halboy [response]
   (merge
-    (select-keys response [:body :headers :status])
+    (select-keys response [:error :body :headers :status])
     {:url (get-in response [:opts :url])
      :raw response}))
-
 
 (deftype CachableHttpClient [cache-store]
   protocol/HttpClient
