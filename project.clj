@@ -1,7 +1,8 @@
-(defproject halboy "5.1.0"
+(defproject halboy "5.1.1"
   :description "a hypermedia parser and navigator"
   :license {:name "MIT License"
             :url  "https://opensource.org/licenses/MIT"}
+  :url "https://github.com/jimmythompson/halboy"
   :dependencies [[org.clojure/clojure "1.9.0-alpha16"]
                  [http-kit "2.3.0"]
                  [cheshire "5.8.0"]
