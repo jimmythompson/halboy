@@ -66,7 +66,14 @@
 
     (testing "json->resource should parse some json into a resource"
       (is (= resource
-             (haljson/json->resource json-representation)))))
+             (haljson/json->resource json-representation))))
+
+    (testing "get-href should work correctly after applying json->resource"
+      (is (= (-> json-representation
+               (haljson/json->resource)
+               (hal/get-href :ea:admin))
+            ["/admins/2"
+             "/admins/5"]))))
 
   (testing "map->resource should parse links"
     (is (= (hal/new-resource "/orders")

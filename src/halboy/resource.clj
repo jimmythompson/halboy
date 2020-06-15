@@ -27,9 +27,10 @@
   "Gets a href within a resource"
   [resource key]
   (let [link (get-link resource key)]
-    (if (seq? link)
-      (map :href link)
-      (:href link))))
+    (when (some? link)
+      (if (map? link)
+        (:href link)
+        (map :href link)))))
 
 (defn resources
   "Gets all the embedded resources as a map"
@@ -63,7 +64,7 @@
   (if-let [m (ensure-link m)]
     (let [existing-links (:links resource)
           updated-link (-> (get existing-links rel)
-                           (create-or-append m))]
+                         (create-or-append m))]
       (->Resource
         (assoc existing-links rel updated-link)
         (:embedded resource)
@@ -86,7 +87,7 @@
   (if (some? r)
     (let [existing-resources (:embedded resource)
           updated-resource (-> (get existing-resources key)
-                               (create-or-append r))]
+                             (create-or-append r))]
       (->Resource
         (:links resource)
         (assoc existing-resources key updated-resource)
@@ -123,4 +124,4 @@
    (->Resource {} {} {}))
   ([self]
    (-> (->Resource {} {} {})
-       (add-link :self self))))
+     (add-link :self self))))
