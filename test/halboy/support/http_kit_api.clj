@@ -1,4 +1,4 @@
-(ns halboy.support.api
+(ns halboy.support.http-kit-api
   (:require [clojure.walk :refer [stringify-keys]]
             [cheshire.core :as json]
             [halboy.resource :refer [new-resource add-links]]
