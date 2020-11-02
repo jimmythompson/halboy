@@ -445,6 +445,20 @@
         (is (= 200 status))
         (is (= "Thomas" (hal/get-property user :name))))))
 
+  (testing "should throw if the response indicates redirect but body does not contain url"
+    (with-fake-http
+      (concat
+        (stubs/on-discover
+          base-url
+          :user {:href      "/users/{id}"
+                 :templated true})
+        [{:method :put
+         :url (create-url base-url "/users/thomas")}
+         {:status 201, :body "{}"}])
+      (is (thrown? ExceptionInfo 
+           (-> (navigator/discover base-url)
+             (navigator/put :user {:id "thomas"} {:name "Thomas"}))))))
+
   (testing "should be able to head to a resource"
     (with-fake-http
       (concat
