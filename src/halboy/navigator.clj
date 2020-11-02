@@ -124,10 +124,15 @@
         request (deep-merge (:http settings) request)
         client (:client settings)
         result (-> (http/exchange client request)
-                 (response->Navigator settings))]
+                 (response->Navigator settings))
+        redirect-location (extract-redirect-location result)]
     (if (follow-redirect? result)
-      (-> (extract-redirect-location result)
-        (get-url settings))
+      (if-not (nil? redirect-location)
+        (get-url redirect-location settings)
+        (throw (ex-info "Attempting to follow a redirect on a resource response with no location (either the body didn't have a :url property or the location header was missing)"
+                 {:headers  (get-in result [:response :headers])
+                  :resource (:resource result)
+                  :response (:response result)})))
       result)))
 
 (defn- post-url
