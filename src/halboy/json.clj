@@ -1,9 +1,10 @@
 (ns halboy.json
   (:require
     [clojure.walk :refer [keywordize-keys]]
-    [halboy.data :refer [transform-values]]
+    [halboy.data :refer [transform-values update-if-present]]
     [halboy.resource :as hal]
-    [cheshire.core :as json])
+    [cheshire.core :as json]
+    [clojure.string :as str])
   (:import (com.fasterxml.jackson.core JsonParseException)))
 
 (declare map->resource resource->map)
@@ -76,3 +77,36 @@
   [resource]
   (-> (resource->map resource)
       json/generate-string))
+
+(defn parse-json-response [response]
+  (try
+    (update-if-present
+      response [:body]
+      #(-> (json/parse-string %)
+         (keywordize-keys)))
+    (catch JsonParseException ex
+      (assoc response
+        :error {:code :not-valid-json
+                :cause ex}))))
+
+(def ^:private json-media-type?
+  #{"application/json"
+    "application/hal+json"})
+
+(defn- json-content-type? [response]
+  (let [content-type (get-in response [:headers :content-type] "application/json")
+        media-type (str/trim (first (str/split content-type #";" 2)))]
+    (json-media-type? media-type)))
+
+(defn if-json-parse-response [response]
+  (if (json-content-type? response)
+    (parse-json-response response)
+    response))
+
+(defn- with-json-body [m]
+  (update-if-present m [:body] json/generate-string))
+
+(defn if-json-encode-body [request]
+  (if (json-content-type? request)
+    (with-json-body request)
+    request))

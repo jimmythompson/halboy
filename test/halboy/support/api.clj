@@ -11,6 +11,7 @@
 (defn on-discover [url & kvs]
   [{:method :get :url url}
    {:status 200
+    :headers {"Content-Type" "application/hal+json"}
     :body   (-> (new-resource)
                 ((partial apply add-links) kvs)
                 resource->json)}])
@@ -107,4 +108,3 @@
     :url     url
     :headers headers}
    response])
-

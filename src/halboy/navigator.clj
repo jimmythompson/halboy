@@ -1,6 +1,7 @@
 (ns halboy.navigator
   (:refer-clojure :exclude [get])
   (:require [clojure.walk :refer [keywordize-keys stringify-keys]]
+            [clojure.string :as str]
             [halboy.resource :as hal]
             [halboy.data :refer [transform-values]]
             [halboy.json :as haljson]
@@ -53,12 +54,23 @@
           (ex-info "No :resume-from option, and self link not absolute"
             {:self-link-value self-link}))))))
 
+(def ^:private hal-media-type?
+  #{"application/hal+json"
+    "application/json"
+    #_"application/hal+xml"})
+
+(defn- hal-response? [response]
+  (let [content-type (get-in response [:headers :content-type] "application/json")
+        media-type (str/trim (first (str/split content-type #";" 2)))]
+    (hal-media-type? media-type)))
+
 (defn- response->Navigator [response settings]
   (if (failed? response)
     (throw (build-error response))
     (let [current-url (:url response)
-          resource (-> (:body response)
-                     haljson/map->resource)]
+          resource (if (hal-response? response)
+                     (haljson/map->resource (:body response))
+                     (hal/new-resource))]
       (->Navigator current-url settings response resource))))
 
 (defn- resource->Navigator
