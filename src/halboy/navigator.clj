@@ -1,9 +1,7 @@
 (ns halboy.navigator
   (:refer-clojure :exclude [get])
-  (:require [clojure.walk :refer [keywordize-keys stringify-keys]]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [halboy.resource :as hal]
-            [halboy.data :refer [transform-values]]
             [halboy.json :as haljson]
             [halboy.http.default :as client]
             [halboy.http.protocol :as http]

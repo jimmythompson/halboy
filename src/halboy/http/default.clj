@@ -1,6 +1,6 @@
 (ns halboy.http.default
   (:require
-    [clojure.walk :refer [stringify-keys keywordize-keys]]
+    [clojure.walk :refer [stringify-keys]]
     [org.httpkit.client :as http]
     [halboy.argutils :refer [deep-merge]]
     [halboy.data :refer [update-if-present]]
@@ -11,16 +11,6 @@
   {:as      :text
    :headers {"Content-Type" "application/json"
              "Accept"       "application/hal+json"}})
-
-(defn http-method->fn [method]
-  (get-in
-    {:head   http/head
-     :get    http/get
-     :post   http/post
-     :put    http/put
-     :patch  http/patch
-     :delete http/delete}
-    [method]))
 
 (defn- with-default-options [m]
   (deep-merge default-http-options m))
@@ -36,13 +26,12 @@
 
 (deftype DefaultHttpClient []
   protocol/HttpClient
-  (exchange [_ {:keys [url method] :as request}]
+  (exchange [_ request]
     (let [request (-> request
                       (with-default-options)
                       (with-transformed-params)
-                      (haljson/if-json-encode-body))
-          http-fn (http-method->fn method)]
-      (-> @(http-fn url request)
+                      (haljson/if-json-encode-body))]
+      (-> @(http/request request)
           (haljson/if-json-parse-response)
           (format-for-halboy)))))
 

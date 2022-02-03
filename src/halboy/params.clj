@@ -2,11 +2,8 @@
   (:require
     [clojure.walk :refer [postwalk]]
     [clojure.set :refer [difference]]
-
     [medley.core :refer [map-vals]]
-
     [uritemplate-clj.core :refer [uritemplate tokenize parse-token]]
-
     [org.bovinegenius.exploding-fish :as uri]))
 
 (defn- stringify-params [params]
