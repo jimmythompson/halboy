@@ -9,7 +9,7 @@
     [halboy.http.protocol :as protocol]))
 
 (def default-http-options
-  {:as      :text
+  {:as      :auto
    :headers {"Content-Type" "application/json"
              "Accept"       "application/hal+json"}})
 

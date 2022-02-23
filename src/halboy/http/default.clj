@@ -8,7 +8,7 @@
     [halboy.json :as haljson]))
 
 (def default-http-options
-  {:as      :text
+  {:as      :auto
    :headers {"Content-Type" "application/json"
              "Accept"       "application/hal+json"}})
 
