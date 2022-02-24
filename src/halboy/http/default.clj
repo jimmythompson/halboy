@@ -5,7 +5,7 @@
     [halboy.argutils :refer [deep-merge]]
     [halboy.data :refer [update-if-present]]
     [halboy.http.protocol :as protocol]
-    [halboy.json :as haljson]))
+    [halboy.types :as types]))
 
 (def default-http-options
   {:as      :stream
@@ -30,9 +30,9 @@
     (let [request (-> request
                       (with-default-options)
                       (with-transformed-params)
-                      (haljson/if-json-encode-body))]
+                      (types/if-json-encode-body))]
       (-> @(http/request request)
-          (haljson/coerce-response-type)
+          (types/coerce-response-type)
           (format-for-halboy)))))
 
 (defn new-http-client []

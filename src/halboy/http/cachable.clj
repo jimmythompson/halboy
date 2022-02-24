@@ -5,8 +5,8 @@
     [clojure.core.cache :as cache]
     [halboy.argutils :refer [deep-merge]]
     [halboy.data :refer [update-if-present]]
-    [halboy.json :as haljson]
-    [halboy.http.protocol :as protocol]))
+    [halboy.http.protocol :as protocol]
+    [halboy.types :as types]))
 
 (def default-http-options
   {:as      :stream
@@ -31,14 +31,14 @@
     (let [request (-> request
                       (with-default-options)
                       (with-transformed-params)
-                      (haljson/if-json-encode-body))
+                      (types/if-json-encode-body))
           response (if (cache/has? @cache-store request)
                      (get (cache/hit @cache-store request) request)
                      (let [updated-cache (swap! cache-store #(cache/miss % request
                                                                          @(http/request request)))]
                        (get updated-cache request)))]
       (-> response
-          (haljson/coerce-response-type)
+          (types/coerce-response-type)
           (format-for-halboy)))))
 
 (defn new-http-client

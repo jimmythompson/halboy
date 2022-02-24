@@ -1,12 +1,13 @@
 (ns halboy.navigator
   (:refer-clojure :exclude [get])
   (:require [halboy.resource :as hal]
-            [halboy.json :as haljson]
             [halboy.http.default :as client]
             [halboy.http.protocol :as http]
             [halboy.params :as params]
             [halboy.argutils :refer [deep-merge]]
-            [halboy.url :as url]))
+            [halboy.url :as url]
+            [halboy.types :as types]
+            [halboy.json :as haljson]))
 
 (def default-settings
   {:client           (client/new-http-client)
@@ -57,7 +58,7 @@
     #_"application/hal+xml"})
 
 (defn- hal-response? [response]
-  (let [content-type (haljson/extract-content-type response)]
+  (let [content-type (types/extract-content-type response)]
     (hal-media-type? (:media-type content-type))))
 
 (defn- response->Navigator [response settings]
