@@ -7,7 +7,7 @@
 
 (def base-url "https://service.example.com")
 
-(deftest halboy-http
+(deftest halboy-http-cache
   (testing "cachableHttpClient without cached data"
     (with-fake-http
       [{:url base-url :method :get} {:status 201
@@ -27,7 +27,7 @@
                :raw     {:body    {}
                          :headers {:content-type "application/json"
                                    :server       "org.httpkit.fake"}
-                         :opts    {:as      :text
+                         :opts    {:as      :stream
                                    :headers {"Accept"       "application/hal+json"
                                              "Content-Type" "application/json"}
                                    :method  :get
@@ -40,7 +40,7 @@
     (let [request {:url    base-url
                    :method :get}
           cache (atom (cache/ttl-cache-factory
-                        {{:as      :text,
+                        {{:as      :stream,
                           :headers {"Content-Type" "application/json",
                                     "Accept"       "application/hal+json"},
                           :url     base-url,

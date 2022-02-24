@@ -24,7 +24,7 @@
                :raw     {:body    "{}"
                          :headers {:content-type "text/html"
                                    :server       "org.httpkit.fake"}
-                         :opts    {:as      :text
+                         :opts    {:as      :stream
                                    :headers {"Accept"       "application/hal+json"
                                              "Content-Type" "application/json"}
                                    :method  :get
@@ -50,7 +50,7 @@
                :raw     {:body    {}
                          :headers {:content-type "application/json"
                                    :server       "org.httpkit.fake"}
-                         :opts    {:as      :text
+                         :opts    {:as      :stream
                                    :headers {"Accept"       "application/hal+json"
                                              "Content-Type" "application/json"}
                                    :method  :get

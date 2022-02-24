@@ -9,7 +9,7 @@
     [halboy.http.protocol :as protocol]))
 
 (def default-http-options
-  {:as      :auto
+  {:as      :stream
    :headers {"Content-Type" "application/json"
              "Accept"       "application/hal+json"}})
 
@@ -38,7 +38,7 @@
                                                                          @(http/request request)))]
                        (get updated-cache request)))]
       (-> response
-          (haljson/if-json-parse-response)
+          (haljson/coerce-response-type)
           (format-for-halboy)))))
 
 (defn new-http-client

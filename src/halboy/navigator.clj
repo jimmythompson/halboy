@@ -1,7 +1,6 @@
 (ns halboy.navigator
   (:refer-clojure :exclude [get])
-  (:require [clojure.string :as str]
-            [halboy.resource :as hal]
+  (:require [halboy.resource :as hal]
             [halboy.json :as haljson]
             [halboy.http.default :as client]
             [halboy.http.protocol :as http]
@@ -58,9 +57,8 @@
     #_"application/hal+xml"})
 
 (defn- hal-response? [response]
-  (let [content-type (get-in response [:headers :content-type] "application/json")
-        media-type (str/trim (first (str/split content-type #";" 2)))]
-    (hal-media-type? media-type)))
+  (let [content-type (haljson/extract-content-type response)]
+    (hal-media-type? (:media-type content-type))))
 
 (defn- response->Navigator [response settings]
   (if (failed? response)
