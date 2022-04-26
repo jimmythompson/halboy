@@ -46,9 +46,6 @@
   (stringify [this charset] "Convert \"this\" to a string with \"charset\"."))
 
 (extend-protocol Stringify
-  (class (byte-array 0))
-  (stringify [this charset]
-    (String. ^bytes this ^String charset))
   nil
   (stringify [_ _] nil)
   String
@@ -59,6 +56,11 @@
   InputStream
   (stringify [this charset]
     (stringify (.readAllBytes this) ^String charset)))
+
+(extend (class (byte-array 0))
+  Stringify
+  {:stringify (fn [this charset]
+                (String. ^bytes this ^String charset))})
 
 (defn- stream-body->string-body [response ^String charset]
   (if (:body response)
