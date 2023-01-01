@@ -1,16 +1,16 @@
-(ns halboy.http.default-test
+(ns halboy.http.httpkit-test
   (:use org.httpkit.fake)
-  (:require [clojure.test :refer :all]
-            [halboy.http.default :as http-client]
+  (:require [clojure.test :refer [deftest testing is]]
+            [halboy.http.http-kit :as httpkit-client]
             [halboy.http.protocol :as http]))
 
 (def base-url "https://service.example.com")
 
 (deftest halboy-http
-  (testing "defaultHttpClient"
+  (testing "http_kit"
     (with-fake-http
       [{:url base-url :method :get} {:status 201 :body "{}"}]
-      (let [client (http-client/new-http-client)
+      (let [client (httpkit-client/new-http-client)
             request {:url    base-url
                      :method :get}]
         (is (=

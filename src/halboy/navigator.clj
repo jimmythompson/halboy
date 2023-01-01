@@ -3,7 +3,7 @@
   (:require
     [halboy.resource :as hal]
     [halboy.json :as haljson]
-    [halboy.http.default :as client]
+    [halboy.http.clj-http :as client]
     [halboy.http.protocol :as http]
     [halboy.params :as params]
     [halboy.argutils :refer [deep-merge]]
