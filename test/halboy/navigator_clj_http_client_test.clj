@@ -1,6 +1,6 @@
 (ns halboy.navigator-clj-http-client-test
 
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest testing is]]
             [clojure.string :refer [capitalize]]
             [halboy.navigator :as navigator]
             [halboy.resource :as hal]
