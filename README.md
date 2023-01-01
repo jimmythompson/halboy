@@ -8,20 +8,9 @@ A Clojure library for all things hypermedia.
 * Marshal to and from JSON, or a map
 * Navigate JSON+HAL APIs
 
-## New in version 5
+## New in version 6
 
-Halboy now filters out keys with nil values:
-
-```clojure
-(require '[halboy.resource :as hal])
-
-(-> (hal/new-resource)
-        (hal/add-links
-            :self "/orders/123" 
-            :creator nil)
-        (links))
-; { :self "/orders/123" }
-```
+* Thanks to a great contribution from @danielzurawski, we now support clj-http. In version 6, this is now the default.
 
 ## API
 
@@ -171,9 +160,20 @@ using any of the methods above.
 
 ### Custom HTTP clients
 
-Halboy offers an out-of-the-box HTTP client which uses HTTPKit. You can pass
+Halboy offers an out-of-the-box HTTP client which, as of 6.0.0, uses clj-http. You can pass
 a HTTP client into Halboy using the `:client` key of the settings. It must
 adhere to the `halboy.http.protocol.HttpClient` protocol.
+
+### HTTP Kit
+
+There is an alternative http client, which uses HTTPKit. You can use it by passing it into the navigator settings:
+
+```clojure
+(navigator/discover "https://api.example.com"
+                    {:client           (halboy.http.http-kit/new-http-client)
+                     :follow-redirects true
+                     :http             {:headers {}}})
+```
 
 #### CachableHttpClient
 Halboy also offers an HTTP client with caching support which is an in-memory 
