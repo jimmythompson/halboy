@@ -1,5 +1,5 @@
 (ns halboy.params-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest testing is]]
             [halboy.params :refer :all]))
 
 (deftest on-build-query

@@ -1,12 +1,11 @@
 (ns halboy.navigator-test
   (:use org.httpkit.fake)
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest testing is]]
             [clojure.string :refer [capitalize]]
             [halboy.navigator :as navigator]
             [halboy.resource :as hal]
             [halboy.json :as json]
-            [halboy.support.api :as stubs]
-            [halboy.resource :as hal])
+            [halboy.support.api :as stubs])
   (:import [java.net URL]
            [clojure.lang ExceptionInfo]))
 
