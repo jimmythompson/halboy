@@ -1,14 +1,13 @@
 (ns halboy.navigator
   (:refer-clojure :exclude [get])
-  (:require [clojure.walk :refer [keywordize-keys stringify-keys]]
-            [halboy.resource :as hal]
-            [halboy.data :refer [transform-values]]
-            [halboy.json :as haljson]
-            [halboy.http.default :as client]
-            [halboy.http.protocol :as http]
-            [halboy.params :as params]
-            [halboy.argutils :refer [deep-merge]]
-            [halboy.url :as url]))
+  (:require
+    [halboy.resource :as hal]
+    [halboy.json :as haljson]
+    [halboy.http.default :as client]
+    [halboy.http.protocol :as http]
+    [halboy.params :as params]
+    [halboy.argutils :refer [deep-merge]]
+    [halboy.url :as url]))
 
 (def default-settings
   {:client           (client/new-http-client)
@@ -32,7 +31,7 @@
 
 (defn- follow-redirect? [navigator]
   (and (= 201 (get-in navigator [:response :status]))
-    (get-in navigator [:settings :follow-redirects])))
+       (get-in navigator [:settings :follow-redirects])))
 
 (defn- extract-header [navigator header]
   (get-in navigator [:response :headers header]))
@@ -51,14 +50,14 @@
         self-link
         (throw
           (ex-info "No :resume-from option, and self link not absolute"
-            {:self-link-value self-link}))))))
+                   {:self-link-value self-link}))))))
 
 (defn- response->Navigator [response settings]
   (if (failed? response)
     (throw (build-error response))
     (let [current-url (:url response)
           resource (-> (:body response)
-                     haljson/map->resource)]
+                       haljson/map->resource)]
       (->Navigator current-url settings response resource))))
 
 (defn- resource->Navigator
@@ -87,7 +86,7 @@
         request (deep-merge (:http settings) request)
         client (:client settings)]
     (-> (http/exchange client request)
-      (response->Navigator settings))))
+        (response->Navigator settings))))
 
 (defn- head-url
   ([url settings]
@@ -124,15 +123,15 @@
         request (deep-merge (:http settings) request)
         client (:client settings)
         result (-> (http/exchange client request)
-                 (response->Navigator settings))
+                   (response->Navigator settings))
         redirect-location (extract-redirect-location result)]
     (if (follow-redirect? result)
       (if-not (nil? redirect-location)
         (get-url redirect-location settings)
         (throw (ex-info "Attempting to follow a redirect on a resource response with no location (either the body didn't have a :url property or the location header was missing)"
-                 {:headers  (get-in result [:response :headers])
-                  :resource (:resource result)
-                  :response (:response result)})))
+                        {:headers  (get-in result [:response :headers])
+                         :resource (:resource result)
+                         :response (:response result)})))
       result)))
 
 (defn- post-url
@@ -192,7 +191,7 @@
   "Gets the status code from the last response from the navigator"
   [navigator]
   (-> (response navigator)
-    :status))
+      :status))
 
 (defn discover
   "Starts a conversation with an API. Use this on the discovery endpoint."
@@ -278,9 +277,9 @@
     (if-not (nil? redirect-location)
       (get-url redirect-location (:settings navigator))
       (throw (ex-info "Attempting to follow a redirect without a location header"
-               {:headers  (get-in navigator [:response :headers])
-                :resource resource
-                :response (:response navigator)})))))
+                      {:headers  (get-in navigator [:response :headers])
+                       :resource resource
+                       :response (:response navigator)})))))
 
 (defn get-header
   "Retrieves a specified header from the response"
