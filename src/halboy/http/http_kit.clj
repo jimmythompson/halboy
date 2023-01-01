@@ -1,4 +1,4 @@
-(ns halboy.http.default
+(ns halboy.http.http-kit
   (:require
     [clojure.walk :refer [stringify-keys]]
     [org.httpkit.client :as http]
@@ -34,9 +34,7 @@
      :raw response}))
 
 (deftype
-  ^{:deprecated "6.0.0"
-    :see-also   ["HttpKitHttpClient"]}
-  DefaultHttpClient []
+  HttpKitHttpClient []
   protocol/HttpClient
   (exchange [_ {:keys [url method] :as request}]
     (let [request (-> request
@@ -48,7 +46,5 @@
           (utils/parse-json-response)
           (format-for-halboy)))))
 
-(defn ^{:deprecated "6.0.0"
-        :see-also   ["http-kit/new-http-client"]}
-  new-http-client []
-  (DefaultHttpClient.))
+(defn new-http-client []
+  (HttpKitHttpClient.))
