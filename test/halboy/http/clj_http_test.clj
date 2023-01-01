@@ -1,6 +1,5 @@
 (ns halboy.http.clj-http-test
-
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest testing is]]
             [halboy.http.protocol :as http]
             [halboy.http.clj-http :as http-client]
             [halboy.resource :as hal]
@@ -11,7 +10,7 @@
 (deftest halboy-clj-http-test
   (let [base-url "https://service.example.com"
         test-resource (-> (hal/new-resource)
-                        (hal/add-property :test "test"))]
+                          (hal/add-property :test "test"))]
 
     (testing "GET with content-type: text/html response - should still parse response"
       (with-fake-routes-in-isolation
@@ -33,11 +32,12 @@
                  :raw     {:body                  {}
                            :headers               {:content-type "text/html"
                                                    :server       "clj-http.fake"}
-                           :opts                  {:as      :text
-                                                   :headers {"Accept"       "application/hal+json"
-                                                             "Content-Type" "application/json"}
-                                                   :method  :get
-                                                   :url     "https://service.example.com"}
+                           :opts                  {:as               :text
+                                                   :headers          {"Accept"       "application/hal+json"
+                                                                      "Content-Type" "application/json"}
+                                                   :method           :get
+                                                   :throw-exceptions false
+                                                   :url              "https://service.example.com"}
                            :orig-content-encoding nil
                            :status                201}
                  :status  201
@@ -61,23 +61,24 @@
                          :method :get}
                 response (http/exchange client request)]
             (is (= (update-in response [:raw] dissoc :request-time)
-                  {:body    expected-response-body
-                   :headers expected-response-headers
+                   {:body    expected-response-body
+                    :headers expected-response-headers
 
-                   :raw     {:body                  {:embedded   {}
-                                                     :links      {}
-                                                     :properties {:test "test"}}
-                             :headers               {:content-type "application/json"
-                                                     :server       "clj-http.fake"}
-                             :opts                  {:as      :text
-                                                     :headers {"Accept"       "application/hal+json"
-                                                               "Content-Type" "application/json"}
-                                                     :method  :get
-                                                     :url     "https://service.example.com"}
-                             :orig-content-encoding nil
-                             :status                201}
-                   :status  201
-                   :url     "https://service.example.com"}))))))
+                    :raw     {:body                  {:embedded   {}
+                                                      :links      {}
+                                                      :properties {:test "test"}}
+                              :headers               {:content-type "application/json"
+                                                      :server       "clj-http.fake"}
+                              :opts                  {:as               :text
+                                                      :headers          {"Accept"       "application/hal+json"
+                                                                         "Content-Type" "application/json"}
+                                                      :method           :get
+                                                      :throw-exceptions false
+                                                      :url              "https://service.example.com"}
+                              :orig-content-encoding nil
+                              :status                201}
+                    :status  201
+                    :url     "https://service.example.com"}))))))
 
     (testing "GET with query params and content-type: application/json response"
       (let [expected-response-body {:embedded   {}
@@ -100,24 +101,25 @@
                          :method       :get}
                 response (http/exchange client request)]
             (is (= (update-in response [:raw] dissoc :request-time)
-                  {:body    expected-response-body
-                   :headers expected-response-headers
+                   {:body    expected-response-body
+                    :headers expected-response-headers
 
-                   :raw     {:body                  {:embedded   {}
-                                                     :links      {}
-                                                     :properties {:test "test"}}
-                             :headers               {:content-type "application/json"
-                                                     :server       "clj-http.fake"}
-                             :opts                  {:as      :text
-                                                     :query-params {:user 123}
-                                                     :headers {"Accept"       "application/hal+json"
-                                                               "Content-Type" "application/json"}
-                                                     :method  :get
-                                                     :url     "https://service.example.com"}
-                             :orig-content-encoding nil
-                             :status                201}
-                   :status  201
-                   :url     "https://service.example.com"}))))))
+                    :raw     {:body                  {:embedded   {}
+                                                      :links      {}
+                                                      :properties {:test "test"}}
+                              :headers               {:content-type "application/json"
+                                                      :server       "clj-http.fake"}
+                              :opts                  {:as               :text
+                                                      :query-params     {:user 123}
+                                                      :headers          {"Accept"       "application/hal+json"
+                                                                         "Content-Type" "application/json"}
+                                                      :method           :get
+                                                      :throw-exceptions false
+                                                      :url              "https://service.example.com"}
+                              :orig-content-encoding nil
+                              :status                201}
+                    :status  201
+                    :url     "https://service.example.com"}))))))
 
     (testing "POST with content-type application/json"
       (let [expected-request-body (json/generate-string test-resource)
@@ -129,43 +131,44 @@
                      (fn [req]
                        (when (and
                                (= expected-request-body
-                                 (http-util/force-string (:body req) "utf-8"))
+                                  (http-util/force-string (:body req) "utf-8"))
                                (= expected-request-headers
-                                 (:headers req)))
+                                  (:headers req)))
 
                          {:status  201
                           :body    (json/generate-string
                                      (-> (hal/new-resource)
-                                       (hal/add-property :test "test")))
+                                         (hal/add-property :test "test")))
                           :headers {:content-type "application/json"
                                     :server       "clj-http.fake"}}))}}
 
           (let [client (http-client/new-http-client)
                 request {:url    base-url
                          :body   (-> (hal/new-resource)
-                                   (hal/add-property :test "test"))
+                                     (hal/add-property :test "test"))
                          :method :post}
                 response (http/exchange client request)]
 
             (is (= (update-in response [:raw] dissoc :request-time)
-                  {:body    {:embedded   {}
-                             :links      {}
-                             :properties {:test "test"}}
-                   :headers {:content-type "application/json"
-                             :server       "clj-http.fake"}
+                   {:body    {:embedded   {}
+                              :links      {}
+                              :properties {:test "test"}}
+                    :headers {:content-type "application/json"
+                              :server       "clj-http.fake"}
 
-                   :raw     {:body                  {:embedded   {}
-                                                     :links      {}
-                                                     :properties {:test "test"}}
-                             :headers               {:content-type "application/json"
-                                                     :server       "clj-http.fake"}
-                             :opts                  {:as      :text
-                                                     :body    (json/generate-string test-resource)
-                                                     :headers {"Accept"       "application/hal+json"
-                                                               "Content-Type" "application/json"}
-                                                     :method  :post
-                                                     :url     "https://service.example.com"}
-                             :orig-content-encoding nil
-                             :status                201}
-                   :status  201
-                   :url     "https://service.example.com"}))))))))
+                    :raw     {:body                  {:embedded   {}
+                                                      :links      {}
+                                                      :properties {:test "test"}}
+                              :headers               {:content-type "application/json"
+                                                      :server       "clj-http.fake"}
+                              :opts                  {:as               :text
+                                                      :body             (json/generate-string test-resource)
+                                                      :headers          {"Accept"       "application/hal+json"
+                                                                         "Content-Type" "application/json"}
+                                                      :method           :post
+                                                      :throw-exceptions false
+                                                      :url              "https://service.example.com"}
+                              :orig-content-encoding nil
+                              :status                201}
+                    :status  201
+                    :url     "https://service.example.com"}))))))))

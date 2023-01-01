@@ -7,7 +7,7 @@
             [halboy.json :as json]
             [halboy.http.clj-http :as clj-http]
             [halboy.support.clj-http-api :as stubs]
-            [clj-http.fake :refer [try-intercept with-fake-routes-in-isolation]])
+            [clj-http.fake :refer [with-fake-routes-in-isolation]])
   (:import [java.net URL]
            [clojure.lang ExceptionInfo]))
 
