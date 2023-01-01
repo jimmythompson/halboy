@@ -1,6 +1,6 @@
 (ns halboy.json-test
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest testing is]]
     [halboy.resource :as hal]
     [halboy.json :as haljson]
     [cheshire.core :as json]))
@@ -70,10 +70,10 @@
 
     (testing "get-href should work correctly after applying json->resource"
       (is (= (-> json-representation
-               (haljson/json->resource)
-               (hal/get-href :ea:admin))
-            ["/admins/2"
-             "/admins/5"]))))
+                 (haljson/json->resource)
+                 (hal/get-href :ea:admin))
+             ["/admins/2"
+              "/admins/5"]))))
 
   (testing "map->resource should parse links"
     (is (= (hal/new-resource "/orders")
