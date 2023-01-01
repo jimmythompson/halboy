@@ -16,5 +16,5 @@
   :profiles {:shared {:dependencies [[nrepl "1.0.0"]]}
              :test   [:shared {:dependencies [[http-kit.fake "0.2.2"]
                                               [clj-http-fake "1.0.3"]
-                                              [eftest "0.5.2"]]}]}
+                                              [eftest "0.6.0"]]}]}
   :eftest {:multithread? false})
