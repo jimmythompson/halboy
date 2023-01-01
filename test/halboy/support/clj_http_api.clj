@@ -1,6 +1,5 @@
 (ns halboy.support.clj-http-api
-  (:require [clojure.walk :refer [stringify-keys]]
-            [cheshire.core :as json]
+  (:require [cheshire.core :as json]
             [halboy.resource :refer [new-resource add-links]]
             [halboy.json :refer [resource->json]]
             [clj-http.util :as http-util]))
